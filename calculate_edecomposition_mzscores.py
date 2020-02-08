@@ -20,7 +20,7 @@ def calculate_values(zfile, covfile, m_out, e_out, q_out):
     print('mean zscores calculated')
 
     e_values, Q = LA.eig(cov)
-   # np.savetxt('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_evalues.csv', e_values, delimiter='\t')
+    #np.savetxt('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_evalues.csv', e_values, delimiter='\t')
     #np.savetxt('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_Q.csv', Q, delimiter='\t')
     np.savetxt(e_out, e_values, delimiter='\t')
     np.savetxt(q_out, Q, delimiter='\t')
@@ -30,8 +30,8 @@ def calculate_values(zfile, covfile, m_out, e_out, q_out):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("-z", "--zscores", required=True, help="Input eigenvalues file")
-    parser.add_argument("-c", "--cov", required=True, help="Input eigenvectorsfile")
+    parser.add_argument("-z", "--zscores", required=True, help="Input zscores file")
+    parser.add_argument("-c", "--cov", required=True, help="Input covariance matrix file")
     parser.add_argument("-m", "--mzscores", required=True, help="Ouptput file with mean zscores")
     parser.add_argument("-e", "--eigenvalues", required=True, help="Ouptput file with eigenvalues")
     parser.add_argument("-q", "--eigenvectors", required=True, help="Ouptput file with eigenvectors")
