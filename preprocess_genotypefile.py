@@ -1,7 +1,7 @@
 import argparse
 import pandas as pd
 
-def preprocessFiles(geno_file, express_file, geno_out, express_out):
+def preprocessFiles(geno_file, express_file, cov_file, geno_out, express_out, cov_out):
     #genotype = pd.read_csv('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/GTExNomalizedSNPGenotypes_chr1_first10_samplename.table', sep='\t')
     #expression = pd.read_csv('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/Clean_expression_first10.tsv', sep='\t')
 
@@ -24,15 +24,23 @@ def preprocessFiles(geno_file, express_file, geno_out, express_out):
     geno_inter.to_csv(geno_out, sep='\t', index=False)
     #exp_inter.to_csv('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/Clean_expression_first10_intersect.tsv', sep='\t')
     exp_inter.to_csv(express_out, sep='\t')
+    #covariates = pd.read_csv('/storage/cynthiawu/trans_eQTL/gtex650_transpose_index_relabel_tab_samplename.pca', sep='\t')
+    covariates = pd.read_csv(cov_file, sep='\t')
+    cov_inter = covariates[intersect]
+    #cov_inter.to_csv('/storage/cynthiawu/trans_eQTL/gtex650_transpose_index_relabel_tab_samplename_inter.pca', sep='\t')
+    cov_inter.to_csv(cov_out, sep='\t')
+
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-g", "--genotype", required=True, help="Input genotype file")
     parser.add_argument("-e", "--expression", required=True, help="Input expression file")
+    parser.add_argument("-c", "--covariates", required=True, help="Input covariates file")
     parser.add_argument("-o", "--geno_out", required=True, help="Output genotype file with intersecting samples")
     parser.add_argument("-p", "--express_out", required=True, help="Output expression file with intersecting samples")
+    parser.add_argument("-q", "--cov_out", required=True, help="Output covariates file with intersecting samples")
     params = parser.parse_args()
-    preprocessFiles(params.genotype, params.expression, params.geno_out, params.express_out)
+    preprocessFiles(params.genotype, params.expression, params.covariates, params.geno_out, params.express_out, params.cov_out)
 
 
 if __name__ == "__main__":

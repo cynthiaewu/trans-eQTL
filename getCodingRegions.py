@@ -31,7 +31,7 @@ def getRegions(input, output, chr):
        '''
     df = pd.read_sql_query(qry, conn)
 
-    df = df.drop(columns=['chr', 'pos', 'start', 'end', 'region', '0', 'strand'])
+    df = df.drop(columns=['chr', 'pos', 'start', 'end', 'region', '0', 'strand', 'chr.1'])
     df = df.drop_duplicates()
     #df.to_csv('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/GTExNormalizedSNPGenotypes_chr1_samplename_inter_coding.table', sep='\t')
     df.to_csv(output, sep='\t', index=False)

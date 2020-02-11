@@ -63,6 +63,7 @@ snps$fileSkipRows = 1;          # one row of column labels
 snps$fileSkipColumns = 1;       # one column of row labels
 snps$fileSliceSize = 2000;      # read file in slices of 2,000 rows
 snps$LoadFile(SNP_file_name);
+print("Genotype file read")
 
 ## Load gene expression data
 
@@ -73,6 +74,7 @@ gene$fileSkipRows = 1;          # one row of column labels
 gene$fileSkipColumns = 1;       # one column of row labels
 gene$fileSliceSize = 2000;      # read file in slices of 2,000 rows
 gene$LoadFile(expression_file_name);
+print("Expression file read")
 
 ## Load covariates
 
@@ -85,6 +87,7 @@ cvrt$fileSkipColumns = 1;       # one column of row labels
 if(length(covariates_file_name)>0) {
   cvrt$LoadFile(covariates_file_name);
 }
+print("Covariates file read")
 
 ## Run the analysis
 
