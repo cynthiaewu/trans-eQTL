@@ -1,6 +1,7 @@
 import argparse
 import numpy as np
 import sqlite3
+import pandas as pd
 
 def getRegions(input, output, chr):
     #genotype_all = pd.read_csv('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/GTExNormalizedSNPGenotypes_chr1_samplename_inter.table', sep='\t')
@@ -9,7 +10,8 @@ def getRegions(input, output, chr):
     coding_regions = coding_regions.loc[coding_regions[0].isin([f'chr{chr}'])]
     #coding_regions = coding_regions.loc[coding_regions[0].isin([f'chr{chr}', 'chr1_gl000191_random', 'chr1_gl000192_random'])]
     coding_regions.columns = ['chr', 'start', 'end', 'region', '0', 'strand']
-    genotype_all = genotype_all.join(genotype_all['chrom_start'].str.split('_', chr, expand=True).rename(columns={0:'chr', chr:'pos'}))
+    genotype_all = genotype_all.join(genotype_all['chrom_start'].str.split('_', 1, expand=True).rename(columns={0:'chr', 1:'pos'}))
+    #print(genotype_all.columns)
     genotype_all['pos'] = genotype_all['pos'].astype(int)
     print('tables read')
 
@@ -29,8 +31,10 @@ def getRegions(input, output, chr):
        '''
     df = pd.read_sql_query(qry, conn)
 
+    df = df.drop(columns=['chr', 'pos', 'start', 'end', 'region', '0', 'strand'])
+    df = df.drop_duplicates()
     #df.to_csv('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/GTExNormalizedSNPGenotypes_chr1_samplename_inter_coding.table', sep='\t')
-    df.to_csv(output, sep='\t')
+    df.to_csv(output, sep='\t', index=False)
 
 def main():
     parser = argparse.ArgumentParser()
