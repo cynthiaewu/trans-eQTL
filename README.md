@@ -1,7 +1,7 @@
 # trans-eQTL
 
 1. Preprocess the genotype and expression file to get intersecting samples
-   - preprocess_genotypefile.py -g input_genotype_file -e input_expression_file -o out_genotype_file -p out_expression_file
+   - preprocess_genotypefile.py -g input_genotype_file -e input_expression_file -c input_covariates_file -o out_genotype_file -p out_expression_file -q out_covariates_file
 2. Filter Genotype file to get only snps in coding regions
    - getCodingRegions.py -i input_preprocess_genotype_file -o output_file -c chr_number
 3. Run Matrix eQTL
