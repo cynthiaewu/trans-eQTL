@@ -6,8 +6,8 @@
    - getCodingRegions.py -i input_preprocess_genotype_file -o output_file -c chr_number
 3. Run Matrix eQTL
    - gene-SNP_pairs.R input_coding_genotype_file input_intersect_expression_file pca_file output
-4. Get the zscores (T-stat) and pvalues from Matrix eQTL output
-   - get_pvalues.py
+4. Get the zscores (T-stat) and pvalues in snp by gene format from Matrix eQTL output
+   - get_values.py -i input_matrixeqtl_file -p out_pvalues -z out_zscores
 5. Calculate CPMA values for each snp from pvalues file
    - calculate_cpma.py -i input_pvalues_file -o cpma_output
   
