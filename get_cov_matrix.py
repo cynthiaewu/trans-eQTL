@@ -1,36 +1,25 @@
 import pandas as pd
 import numpy as np
+import argparse
 
-data = pd.read_csv('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls.csv', sep='\t')
-data_sorted = data.sort_values(["SNP", "gene"], ascending=[True, True])
-genes = list(data_sorted[0:28315]['gene'])
 
-cur_snp = ''
-cur_row = []
-scores = []
-snps = []
-#start
-count = 0
-for index, row in data_sorted.iterrows():
-    new_snp = row[0]
-    zscore = row[3]
-    if cur_snp == new_snp:
-        cur_row.append(zscore)
-    else:
-        scores.append(cur_row)
-        cur_row = [zscore]
-        cur_snp = new_snp
-        snps.append(new_snp)
-        #print(new_snp)
-        count += 1
-        if count % 100:
-            print(count)
-scores.append(cur_row)
-scores.remove(scores[0])
+def getCov(input, output):
+    data = pd.read_csv(input, sep='\t', index_col=0)
+    genes = list(data.columns)
+    scores = np.array(data)
+    cov = np.cov(np.transpose(scores))
+    cov_matrix = pd.DataFrame(cov, columns=genes)
+    #cov_matrix.to_csv('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_cov.csv', index=True, header=True, sep='\t')
+    cov_matrix.to_csv(output, index=False, header=True, sep='\t')
 
-zscore_matrix = pd.DataFrame(scores, index=snps, columns=genes)
-zscore_matrix.to_csv('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_zscores.csv', index=True, header=True, sep='\t')
 
-cov = np.cov(np.transpose(scores))
-cov_matrix = pd.DataFrame(cov, columns=genes)
-cov_matrix.to_csv('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_cov.csv', index=True, header=True, sep='\t')
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-i", "--input", required=True, help="Input file with zscores from matrix eQTL")
+    parser.add_argument("-o", "--output", required=True, help="Ouptput file with simulated zscores")
+    params = parser.parse_args()
+    getCov(params.input, params.output)
+
+
+if __name__ == "__main__":
+    main()
