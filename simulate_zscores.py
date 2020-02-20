@@ -5,7 +5,7 @@ from numpy import genfromtxt
 
 def simulateZscores(zfile, efile, qfile, output, n):
     #mean_zscores = np.loadtxt('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_meanzscores.csv', dtype=complex, delimiter='\t')
-    mean_zscores = np.loadtxt(zfile, dtype=complex, delimiter='\t')
+    mean_zscores = np.loadtxt(zfile, delimiter='\t')
     print('mean zscores file read')
 
     #e_values = np.loadtxt('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_evalues.csv', dtype=complex, delimiter='\t')
