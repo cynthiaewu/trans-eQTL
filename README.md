@@ -13,11 +13,11 @@
   
     To check the distribution of cpma values follows the chi distribution of df=1, we generated random pvalues from a normal distribution and calculated cpma values for these
    - generate_random_pvalue.py 
-6. Calculate the gene covariance matrix with zscores file
-   - get_cov_matrix.py 
+6. Calculate the gene covariance matrix and mean zscores for genes with zscores file
+   - calculate_cov_meanzscores.py -i input zscores_file -c cov_out -m mzscores_out
 7. Calculate the eigendecomposition and mean zscores
-   - calculate_edecomposition_mzscores.py -z input_zscores_file -c input_cov_matrix_file -m mean_zscores_output -e eigenvalues_output -q eigenvectors_output
-8. Simulate zscores from normal distribution with gene covariance matrix.
+   - calculate_edecomposition.py -c input_cov_matrix_file -e eigenvalues_output -q eigenvectors_output
+8. Simulate cpma values from normal distribution with gene covariance matrix and mean zscores
    - simulate_zscores.py -z input_mean_zscores_file -e input_eigenvalues_file -q input_eigenvectors_file -o sim_output -n num_simulations
    - get_sim1000_zscores.py 
 9. Calculate cpma values from simulated zscores and compare with observed cpma to get an empirical pvalue for each snp
