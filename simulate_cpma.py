@@ -3,6 +3,14 @@ import numpy as np
 from numpy import linalg as LA
 from numpy import genfromtxt
 
+
+def calculate_cpma(sim_zscores, num_genes):
+    sim_pvalues = norm.cdf(sim_zscores)
+    likelihood = np.mean(np.negative(np.log(sim)))
+    value = -2 * ((((likelihood - 1) * num_genes)/likelihood) - num_genes*np.log(likelihood))
+    return value
+
+
 def simulateZscores(zfile, efile, qfile, output, n):
     #mean_zscores = np.loadtxt('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_meanzscores.csv', dtype=complex, delimiter='\t')
     mean_zscores = np.loadtxt(zfile, delimiter='\t')
@@ -20,19 +28,20 @@ def simulateZscores(zfile, efile, qfile, output, n):
     E = np.sqrt(diag_e_values)
 
     print('starting simulations')
-    sim_zscores = []
+    sim_cpma = []
     e_matrix = np.dot(Q, E)
     for i in range(n):
         if (i%10==0):
             print(i)
         z = np.random.normal(0, 1, n_genes)
-        cur_sim_zscores = mean_zscores + np.dot(e_matrix,z)
-        sim_zscores.append(cur_sim_zscores.real)
-    print('simuated zscores calculated')
+        sim_zscores = mean_zscores + np.dot(e_matrix,z)
+        cpma = calculate_cpma(sim_zscores.real, n_genes)
+        sim_cpma.append(cpma)
+    print('simuated cpma calculated')
 
-    sim_zscores = np.array(sim_zscores)
+    sim_cpma = np.array(sim_cpma)
    # np.savetxt('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_simzscores100.csv', sim_zscores, delimiter='\t')
-    np.savetxt(output, sim_zscores, delimiter='\t')
+    np.savetxt(output, sim_cpma, delimiter='\t', fmt='%f')
 
 
 def main():
@@ -40,7 +49,7 @@ def main():
     parser.add_argument("-z", "--mzscores", required=True, help="Input mean zscores file")
     parser.add_argument("-e", "--eigenvalues", required=True, help="Input eigenvalues file")
     parser.add_argument("-q", "--eigenvectors", required=True, help="Input eigenvectorsfile")
-    parser.add_argument("-o", "--output", required=True, help="Ouptput file with simulated zscores")
+    parser.add_argument("-o", "--output", required=True, help="Ouptput file with simulated cpma values")
     parser.add_argument("-n", "--simulations", required=True, type=int, help="Number of simulations")
     params = parser.parse_args()
     simulateZscores(params.mzscores, params.eigenvalues, params.eigenvectors, params.output, params.simulations)
