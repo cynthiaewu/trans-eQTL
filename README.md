@@ -8,6 +8,9 @@
    - gene-SNP_pairs.R input_coding_genotype_file input_intersect_expression_file pca_file output
 4. Get the zscores (T-stat) and pvalues in snp by gene format from Matrix eQTL output
    - get_values.py -i input_matrixeqtl_file -p out_pvalues -z out_zscores
+   
+   To merge all zscores file into one file:
+    for CHR in {2..22}; do tail -n +2 -q Nerve-Tibial/chr$CHR/gene_snp_zscores_chr$CHR.csv  >> all_chr_zscores.csv; done
 5. Calculate CPMA values for each snp from pvalues file
    - calculate_cpma.py -i input_pvalues_file -o cpma_output
   
