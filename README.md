@@ -25,6 +25,10 @@
    - calculate_edecomposition.py -c input_cov_matrix_file -e eigenvalues_output -q eigenvectors_output
 8. Simulate cpma values from normal distribution with gene covariance matrix and mean zscores
    - simulate_zscores.py -z input_mean_zscores_file -e input_eigenvalues_file -q input_eigenvectors_file -o sim_output -n num_simulations
+   
+   Perform simulations in chunks of 5000
+   
+   - simulate_cpma_chunks.py -z input_mean_zscores_file -e input_eigenvalues_file -q input_eigenvectors_file -o sim_output -n num_simulations
 9. Compare simulated cpma with observed cpma to get an empirical pvalue for each snp
    - calculate_empirical_pvalue.py -s simulated_cpma -o observed_cpma -e empirical_pvalues_output
 
