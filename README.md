@@ -11,7 +11,9 @@
    
    To merge all zscores file into one file:
    
-    for CHR in {2..22}; do tail -n +2 -q Nerve-Tibial/chr$CHR/gene_snp_zscores_chr$CHR.csv  >> all_chr_zscores.csv; done
+   cp gene_snp_zscores_chr1.csv all_chr_zscores.csv
+   
+   for CHR in {2..22}; do tail -n +2 -q Nerve-Tibial/chr$CHR/gene_snp_zscores_chr$CHR.csv  >> all_chr_zscores.csv; done
 5. Calculate CPMA values for each snp from pvalues file
    - calculate_cpma.py -i input_pvalues_file -o cpma_output
   
@@ -23,7 +25,6 @@
    - calculate_edecomposition.py -c input_cov_matrix_file -e eigenvalues_output -q eigenvectors_output
 8. Simulate cpma values from normal distribution with gene covariance matrix and mean zscores
    - simulate_zscores.py -z input_mean_zscores_file -e input_eigenvalues_file -q input_eigenvectors_file -o sim_output -n num_simulations
-   - get_sim1000_zscores.py 
-9. Calculate cpma values from simulated zscores and compare with observed cpma to get an empirical pvalue for each snp
-   - calculate_empirical_pvalue.py -s simulated_zscores -o observed_cpma -e empirical_pvalues_output
+9. Compare simulated cpma with observed cpma to get an empirical pvalue for each snp
+   - calculate_empirical_pvalue.py -s simulated_cpma -o observed_cpma -e empirical_pvalues_output
 
