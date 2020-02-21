@@ -12,6 +12,7 @@
    To merge all zscores file into one file:
    
    cp gene_snp_zscores_chr1.csv all_chr_zscores.csv
+   
    for CHR in {2..22}; do tail -n +2 -q Nerve-Tibial/chr$CHR/gene_snp_zscores_chr$CHR.csv  >> all_chr_zscores.csv; done
 5. Calculate CPMA values for each snp from pvalues file
    - calculate_cpma.py -i input_pvalues_file -o cpma_output
