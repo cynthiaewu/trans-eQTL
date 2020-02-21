@@ -1,12 +1,12 @@
 import argparse
 import numpy as np
 from numpy import linalg as LA
-from numpy import genfromtxt
+from scipy.stats import norm
 
 
 def calculate_cpma(sim_zscores, num_genes):
     sim_pvalues = norm.cdf(sim_zscores)
-    likelihood = np.mean(np.negative(np.log(sim)))
+    likelihood = np.mean(np.negative(np.log(sim_pvalues)))
     value = -2 * ((((likelihood - 1) * num_genes)/likelihood) - num_genes*np.log(likelihood))
     return value
 
@@ -31,7 +31,7 @@ def simulateZscores(zfile, efile, qfile, output, n):
     sim_cpma = []
     e_matrix = np.dot(Q, E)
     for i in range(n):
-        if (i%10==0):
+        if (i%1000==0):
             print(i)
         z = np.random.normal(0, 1, n_genes)
         sim_zscores = mean_zscores + np.dot(e_matrix,z)

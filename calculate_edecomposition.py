@@ -1,6 +1,6 @@
 import numpy as np
-from numpy import linalg as LA
-from numpy import genfromtxt
+from scipy import linalg as LA
+import argparse
 
 def calculate_values(covfile, e_out, q_out):
     #zscores = genfromtxt('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_zscores.csv', delimiter='\t', skip_header=1)

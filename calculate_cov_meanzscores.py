@@ -19,7 +19,7 @@ def getCov(input, cov_out, m_out):
         mean_zscores.append(np.mean(i))
     mean_zscores = np.array(mean_zscores)
     #np.savetxt('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_meanzscores.csv', mean_zscores, delimiter='\t')
-    np.savetxt(m_out, mean_zscores, delimiter='\t', fmt='%f'))
+    np.savetxt(m_out, mean_zscores, delimiter='\t', fmt='%f')
     print('mean zscores calculated')
 
 def main():
