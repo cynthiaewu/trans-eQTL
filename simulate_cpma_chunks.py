@@ -18,7 +18,7 @@ def simulateZscores(zfile, efile, qfile, output, n):
     #print(mean_zscores.shape)
 
     #e_values = np.loadtxt('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_evalues.csv', dtype=complex, delimiter='\t')
-    e_values = np.loadtxt(efile, dtype=complex, delimiter='\t')
+    e_values = (np.loadtxt(efile, dtype=complex, delimiter='\t')).real
     n_genes = len(e_values)
     print(n_genes)
     print('e_values file read')
@@ -26,7 +26,7 @@ def simulateZscores(zfile, efile, qfile, output, n):
     Q = (np.loadtxt(qfile, dtype=complex, delimiter='\t')).real
     print('Q file read')
     diag_e_values = np.diag(e_values)
-    E = (np.sqrt(diag_e_values)).real
+    E = np.sqrt(diag_e_values)
     #print(E)
     
     print('starting simulations')
@@ -35,28 +35,29 @@ def simulateZscores(zfile, efile, qfile, output, n):
     e_matrix = np.dot(Q, E)
    
     sim_cpma = []
-    iterations = math.ceil(n/1000)
+    iterations = math.ceil(n/5000)
     #print(iterations)
     sim_undone = n
     #perform in chunks of 1000
     for i in range(iterations):
-        cur_n = min(1000, sim_undone)
+        cur_n = min(5000, sim_undone)
         sim_undone = sim_undone - cur_n
         print(n-sim_undone)
 
-        z=np.random.normal(0, 1, (cur_n, n_genes))
+        z=np.random.normal(0, 1, (n_genes, cur_n))
         #print(z.shape)
-        mzscores_tile = np.tile(mean_zscores, (cur_n, 1))
+        mzscores_tile = np.transpose(np.tile(mean_zscores, (cur_n, 1)))
         #print(mzscores_tile.shape)
-        sim_zscores = mzscores_tile + np.dot(z, e_matrix)
+        sim_zscores = mzscores_tile + np.dot(e_matrix, z)
         #print(sim_zscores.shape)
-        sim_pvalues = norm.cdf(sim_zscores)
+        sim_pvalues = np.transpose(norm.cdf(sim_zscores))
         #print(sim_pvalues.shape)
         for sim in sim_pvalues:
+            #print(len(sim))
             cpma = calculate_cpma(sim, n_genes)
             sim_cpma.append(cpma)
 
-    print('simuated cpma calculated')
+    print('simulated cpma calculated')
 
     sim_cpma = np.array(sim_cpma)
    # np.savetxt('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_simzscores100.csv', sim_zscores, delimiter='\t')
