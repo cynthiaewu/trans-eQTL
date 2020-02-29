@@ -31,4 +31,7 @@
    - simulate_cpma_chunks.py -z input_mean_zscores_file -e input_eigenvalues_file -q input_eigenvectors_file -o sim_output -n num_simulations
 9. Compare simulated cpma with observed cpma to get an empirical pvalue for each snp
    - calculate_empirical_pvalue.py -s simulated_cpma -o observed_cpma -e empirical_pvalues_output
+10. Get qvalues from empirical pvalues
+11. Get consequence annotation for every snp.
 
+zcat GTEx_Analysis_20150112_WholeGenomeSeq_VarSitesAnnot.vcf.gz| tail -n +146 | awk -F '\t' '{print $1, $2, $8}' | sed -E 's/(.+) (.+) (.+);CSQ=([^|]+)\|([^|]+)\|(.+)/\1 \2 \5/' > /storage/cynthiawu/trans_eQTL/Gtex_snp-consq.txt
