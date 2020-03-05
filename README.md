@@ -1,5 +1,6 @@
 # trans-eQTL
 Preprocessing Steps
+
 a. Get gene annotations, keep only protein coding genes
 
 tail -n +7 gencode.v19.genes.v7.patched_contigs.gtf| awk -F '\t' '{print $9}' | cut -d ';' -f 1,3,5| cut -d '"' -f 2,4,6 | sed 's/"/\t/g' > /storage/cynthiawu/trans_eQTL/gene_annotations_gencode.v19.genes.v7.csv
