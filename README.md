@@ -3,7 +3,7 @@ Preprocessing Steps
 
 a. Get gene annotations, keep only protein coding genes
 
-tail -n +7 gencode.v19.genes.v7.patched_contigs.gtf| awk -F '\t' '{print $9}' | cut -d ';' -f 1,3,5| cut -d '"' -f 2,4,6 | sed 's/"/\t/g' > /storage/cynthiawu/trans_eQTL/gene_annotations_gencode.v19.genes.v7.csv
+tail -n +7 /storage/resources/dbase/human/gene_annotations/gencode.v19.genes.v7.patched_contigs.gtf| awk -F '\t' '{print $9}' | cut -d ';' -f 1,3,5| cut -d '"' -f 2,4,6 | sed 's/"/\t/g' > /storage/cynthiawu/trans_eQTL/gene_annotations_gencode.v19.genes.v7.csv
 
 1. Preprocess the genotype and expression file to get intersecting samples
    - preprocess_genotypefile.py -g input_genotype_file -e input_expression_file -c input_covariates_file -o genotype_output -p expression_output -q covariates_output
