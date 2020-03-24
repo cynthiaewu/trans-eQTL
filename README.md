@@ -1,4 +1,15 @@
 # trans-eQTL
+Preprocessing Steps
+
+a. Get gene annotations, keep only protein coding genes
+
+tail -n +7 /storage/resources/dbase/human/gene_annotations/gencode.v19.genes.v7.patched_contigs.gtf| awk -F '\t' '{print $9}' | cut -d ';' -f 1,3,5| cut -d '"' -f 2,4,6 | sed 's/"/\t/g' > /storage/cynthiawu/trans_eQTL/gene_annotations_gencode.v19.genes.v7.csv
+
+b. Get allele count, allele frequency, HWE annotations for each snp
+
+zcat /storage/resources/datasets/gtex/53844/PhenoGenotypeFiles/RootStudyConsentSet_phs000424.GTEx.v6.p1.c1.GRU/GenotypeFiles/phg000520.v2.GTEx_MidPoint_WGS_SNP_CNV.genotype-calls-vcf.c1/GTEx_Analysis_20150112_WholeGenomeSeq_VarSitesAnnot.vcf.gz| tail -n +146 | awk -F '\t' '{print $1, $2, $8}' | sed -E 's/(.+) (.+) AC=(.+);\AF=(.+);AN=(.+);HWP=(.+);In(.+)/\1 \2 \3 \4 \6/' > /storage/cynthiawu/trans_eQTL/GTEx_snp_AC_AF_HWE.txt
+
+sed -i "1s/.*/chr pos AC AF HWE/" GTEx_snp_AC_AF_HWE.txt
 
 1. Preprocess the genotype and expression file to get intersecting samples
    - preprocess_genotypefile.py -g input_genotype_file -e input_expression_file -c input_covariates_file -o genotype_output -p expression_output -q covariates_output
@@ -31,4 +42,7 @@
    - simulate_cpma_chunks.py -z input_mean_zscores_file -e input_eigenvalues_file -q input_eigenvectors_file -o sim_output -n num_simulations
 9. Compare simulated cpma with observed cpma to get an empirical pvalue for each snp
    - calculate_empirical_pvalue.py -s simulated_cpma -o observed_cpma -e empirical_pvalues_output
+10. Get qvalues from empirical pvalues
+11. Get consequence annotation for every snp.
 
+zcat GTEx_Analysis_20150112_WholeGenomeSeq_VarSitesAnnot.vcf.gz| tail -n +146 | awk -F '\t' '{print $1, $2, $8}' | sed -E 's/(.+) (.+) (.+);CSQ=([^|]+)\|([^|]+)\|(.+)/\1 \2 \5/' > /storage/cynthiawu/trans_eQTL/Gtex_snp-consq.txt
