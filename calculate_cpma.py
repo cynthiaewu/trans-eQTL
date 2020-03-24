@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 from numpy import genfromtxt
+import argparse
+
 
 def calculate_cpma(input, output):
     #pvalues = genfromtxt('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_pvalues_nofdr.csv', delimiter='\t', skip_header=1)
