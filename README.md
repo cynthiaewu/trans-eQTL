@@ -1,5 +1,5 @@
 # trans-eQTL
-Preprocessing Steps
+## Preprocessing Steps
 
 a. Get gene annotations, keep only protein coding genes
 
@@ -11,6 +11,28 @@ zcat /storage/resources/datasets/gtex/53844/PhenoGenotypeFiles/RootStudyConsentS
 
 sed -i "1s/.*/chr pos AC AF HWE/" GTEx_snp_AC_AF_HWE.txt
 
+c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
+
+ zcat phs000424.v7.pht002742.v7.p2.c1.GTEx_Subject_Phenotypes.GRU.txt.gz| tail -n +11 | awk -F '\t' '{print $2, $4, $5, $15, $35}' OFS='\t' > /storage/cynthiawu/trans_eQTL/gtex_covariates.txt
+ 
+ ## Filtering Scripts
+ 
+ Get protein coding genes. 
+ - filter_genes.py -i input_file -o out_filtered_file
+ 
+ Get genes with rpkm > 0.1 in at least 10 samples.
+ - filter_genes_rpkm.py -i input_file -o out_filtered_file
+ 
+ Get snps with SNPs with MAF >= 0.1%, minor allele count >= 3, HWE >= 0.01
+ - filter_snps.py -i input_file -o out_filtered_file
+ 
+ Get the European sample for the genotype and expression files
+ - get_european_samples.py -i input_file -e european_samples_file -t type_file (0 for genotype, 1 for expression) -o data_euro_output
+ 
+ Get the covariates for the European samples
+ - get_european_samples_covariates.py -i input_covariate_file -e european_samples_file -o cov_euro_output
+ 
+ ## Steps
 1. Preprocess the genotype and expression file to get intersecting samples
    - preprocess_genotypefile.py -g input_genotype_file -e input_expression_file -c input_covariates_file -o genotype_output -p expression_output -q covariates_output
 2. Filter Genotype file to get only snps in coding regions
