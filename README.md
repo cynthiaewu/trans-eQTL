@@ -47,8 +47,12 @@ c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
  - get_european_samples_covariates.py -i input_covariate_file -e european_samples_file -o cov_euro_output
  
  ## Steps
-1. Preprocess the genotype and expression file to get intersecting samples
-   - preprocess_genotypefile.py -g input_genotype_file -e input_expression_file -c input_covariates_file -o genotype_output -p expression_output -q covariates_output
+1. Intersect expression and genotype files to get intersecting samples. Keep only the intersecting columns of the expression and covariate file. 
+   - find_sample_intersect.py -g input_genotype_file -e input_expression_file -c input_covariates_file -i intersect_output -p expression_output -q covariates_output
+
+Preprocess the genotype files for each chr to get intersecting samples
+   - preprocess_genotypefile.py -g input_genotype_file -i intersect_file -o genotype_output 
+   
 2. Filter Genotype file to get only snps in coding regions
    - getCodingRegions.py -i input_preprocess_genotype_file -o output_file -c chr_number
 3. Run Matrix eQTL
