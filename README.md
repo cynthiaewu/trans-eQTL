@@ -1,4 +1,16 @@
 # trans-eQTL
+## Files
+Genotypes:
+/storage/mgymrek/gtex-estrs/revision/genotypes/
+
+Expression:
+/storage/szfeupe/Runs/650GTEx_estr/Analysis_by_Tissue/Review_Rerun
+
+Covariates:
+/storage/szfeupe/Runs/GTEx_estr/gtex650.pca
+
+/storage/cynthiawu/trans_eQTL/gtex650_transpose.pca    
+
 ## Preprocessing Steps
 
 a. Get gene annotations, keep only protein coding genes
@@ -25,6 +37,7 @@ c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
  
  Get snps with SNPs with MAF >= 0.1%, minor allele count >= 3, HWE >= 0.01
  - filter_snps.py -i input_file -o out_filtered_file
+ 
  python filter_snps.py -i ../Nerve-Tibial/chr1/GTExNormalizedSNPGenotypes_chr1_samplename_inter_coding.table -o ../Nerve-Tibial/chr1/GTExNormalizedSNPGenotypes_chr1_samplename_inter_coding_filtered.table
  
  Get the European sample for the genotype and expression files
