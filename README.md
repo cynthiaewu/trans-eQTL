@@ -25,6 +25,7 @@ c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
  
  Get snps with SNPs with MAF >= 0.1%, minor allele count >= 3, HWE >= 0.01
  - filter_snps.py -i input_file -o out_filtered_file
+ python filter_snps.py -i ../Nerve-Tibial/chr1/GTExNormalizedSNPGenotypes_chr1_samplename_inter_coding.table -o ../Nerve-Tibial/chr1/GTExNormalizedSNPGenotypes_chr1_samplename_inter_coding_filtered.table
  
  Get the European sample for the genotype and expression files
  - get_european_samples.py -i input_file -e european_samples_file -t type_file (0 for genotype, 1 for expression) -o data_euro_output
