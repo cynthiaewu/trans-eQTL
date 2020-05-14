@@ -40,10 +40,11 @@ c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
  
  Get genes with rpkm > 0.1 in at least 10 samples.
  - filter_genes_rpkm.py -i input_file -o out_filtered_file
- ```
  
  Get snps with SNPs with MAF >= 0.1%, minor allele count >= 3, HWE >= 0.01
  - filter_snps.py -i input_file -o out_filtered_file
+ - getCodingRegions.py -i input_preprocess_genotype_file -o output_file -c chr_number
+ ```
  
  python filter_snps.py -i ../Nerve-Tibial/chr1/GTExNormalizedSNPGenotypes_chr1_samplename_inter_coding.table -o ../Nerve-Tibial/chr1/GTExNormalizedSNPGenotypes_chr1_samplename_inter_coding_filtered.table
  
@@ -61,8 +62,8 @@ c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
    - preprocess_genotypefile.py -g input_genotype_file -i intersect_file -o genotype_output 
    
 2. Filtering Steps
-    Filter Genotype file to get only snps in coding regions
-   - getCodingRegions.py -i input_preprocess_genotype_file -o output_file -c chr_number
+    Filter Genotype file to get only snps in coding regions. Get snps with SNPs with MAF > 0.01, minor allele count >= 3, HWE > 0.001. snp list = /storage/cynthiawu/trans_eQTL/GTex_filteredsnps_pos.txt
+   - filter_snps.py -i input_preprocess_genotype_file -s filtered_snp_list -o output_file -c chr_number
    
     Filter Expression file. Get protein coding genes and genes with rpkm > 0.1 in at least 10 samples.
    - filter_genes.py -i input_file -o out_filtered_file
