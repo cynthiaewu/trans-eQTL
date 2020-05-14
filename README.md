@@ -53,7 +53,7 @@ c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
 1. Intersect expression and genotype files to get intersecting samples. Keep only the intersecting columns of the expression and covariate file. 
    - find_sample_intersect.py -g input_genotype_file -e input_expression_file -c input_covariates_file -i intersect_output -p expression_output -q covariates_output
 
-Preprocess the genotype files for each chr to get intersecting samples
+    Preprocess the genotype files for each chr to get intersecting samples
    - preprocess_genotypefile.py -g input_genotype_file -i intersect_file -o genotype_output 
    
 2. Filtering Steps
