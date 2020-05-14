@@ -21,6 +21,8 @@ b. Get allele count, allele frequency, HWE annotations for each snp
 
 bcftools query -i 'AF[0]>0.01 && AC[0]>2 && HWP>0.001' -f'%CHROM\t%POS\t%AF{1}\t%AC{1}\t%HWP\n' GTEx_Analysis_20150112_WholeGenomeSeq_VarSitesAnnot.vcf.gz -o /storage/cynthiawu/trans_eQTL/GTex_filteredsnps.txt
 
+Get a list of the filtered snp positions in format chr_pos
+
 format_filtersnps.py -i input_bcftool_output -o output_snp_pos_file
 
 ```
