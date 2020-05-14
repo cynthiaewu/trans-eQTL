@@ -29,11 +29,14 @@ c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
  
  ## Filtering Scripts
  
+ ```
+ #combined both steps in filter_genes.py
  Get protein coding genes. 
  - filter_genes.py -i input_file -o out_filtered_file
  
  Get genes with rpkm > 0.1 in at least 10 samples.
  - filter_genes_rpkm.py -i input_file -o out_filtered_file
+ ```
  
  Get snps with SNPs with MAF >= 0.1%, minor allele count >= 3, HWE >= 0.01
  - filter_snps.py -i input_file -o out_filtered_file
@@ -53,8 +56,13 @@ c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
 Preprocess the genotype files for each chr to get intersecting samples
    - preprocess_genotypefile.py -g input_genotype_file -i intersect_file -o genotype_output 
    
-2. Filter Genotype file to get only snps in coding regions
+2. Filtering Steps
+    Filter Genotype file to get only snps in coding regions
    - getCodingRegions.py -i input_preprocess_genotype_file -o output_file -c chr_number
+   
+    Filter Expression file. Get protein coding genes and genes with rpkm > 0.1 in at least 10 samples.
+   - filter_genes.py -i input_file -o out_filtered_file
+ 
 3. Run Matrix eQTL
    - gene-SNP_pairs.R input_coding_genotype_file input_intersect_expression_file pca_file output
 4. Get the zscores (T-stat) and pvalues in snp by gene format from Matrix eQTL output
