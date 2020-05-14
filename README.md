@@ -19,6 +19,8 @@ tail -n +7 /storage/resources/dbase/human/gene_annotations/gencode.v19.genes.v7.
 
 b. Get allele count, allele frequency, HWE annotations for each snp
 
+bcftools query -i 'AF[0]>0.01 && AC[0]>2 && HWP>0.001' -f'%CHROM\t%POS\t%AF{1}\t%AC{1}\t%HWP\n' GTEx_Analysis_20150112_WholeGenomeSeq_VarSitesAnnot.vcf.gz -o /storage/cynthiawu/trans_eQTL/GTex_filteredsnps.txt
+
 zcat /storage/resources/datasets/gtex/53844/PhenoGenotypeFiles/RootStudyConsentSet_phs000424.GTEx.v6.p1.c1.GRU/GenotypeFiles/phg000520.v2.GTEx_MidPoint_WGS_SNP_CNV.genotype-calls-vcf.c1/GTEx_Analysis_20150112_WholeGenomeSeq_VarSitesAnnot.vcf.gz| tail -n +146 | awk -F '\t' '{print $1, $2, $8}' | sed -E 's/(.+) (.+) AC=(.+);\AF=(.+);AN=(.+);HWP=(.+);In(.+)/\1 \2 \3 \4 \6/' > /storage/cynthiawu/trans_eQTL/GTEx_snp_AC_AF_HWE.txt
 
 sed -i "1s/.*/chr pos AC AF HWE/" GTEx_snp_AC_AF_HWE.txt
