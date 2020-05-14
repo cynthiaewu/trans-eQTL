@@ -23,9 +23,11 @@ bcftools query -i 'AF[0]>0.01 && AC[0]>2 && HWP>0.001' -f'%CHROM\t%POS\t%AF{1}\t
 
 format_filtersnps.py -i input_bcftool_output -o output_snp_pos_file
 
+```
 zcat /storage/resources/datasets/gtex/53844/PhenoGenotypeFiles/RootStudyConsentSet_phs000424.GTEx.v6.p1.c1.GRU/GenotypeFiles/phg000520.v2.GTEx_MidPoint_WGS_SNP_CNV.genotype-calls-vcf.c1/GTEx_Analysis_20150112_WholeGenomeSeq_VarSitesAnnot.vcf.gz| tail -n +146 | awk -F '\t' '{print $1, $2, $8}' | sed -E 's/(.+) (.+) AC=(.+);\AF=(.+);AN=(.+);HWP=(.+);In(.+)/\1 \2 \3 \4 \6/' > /storage/cynthiawu/trans_eQTL/GTEx_snp_AC_AF_HWE.txt
 
 sed -i "1s/.*/chr pos AC AF HWE/" GTEx_snp_AC_AF_HWE.txt
+```
 
 c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
 
@@ -44,9 +46,9 @@ c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
  Get snps with SNPs with MAF >= 0.1%, minor allele count >= 3, HWE >= 0.01
  - filter_snps.py -i input_file -o out_filtered_file
  - getCodingRegions.py -i input_preprocess_genotype_file -o output_file -c chr_number
- ```
  
  python filter_snps.py -i ../Nerve-Tibial/chr1/GTExNormalizedSNPGenotypes_chr1_samplename_inter_coding.table -o ../Nerve-Tibial/chr1/GTExNormalizedSNPGenotypes_chr1_samplename_inter_coding_filtered.table
+ ```
  
  Get the European sample for the genotype and expression files
  - get_european_samples.py -i input_file -e european_samples_file -t type_file (0 for genotype, 1 for expression) -o data_euro_output
@@ -62,6 +64,7 @@ c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
    - preprocess_genotypefile.py -g input_genotype_file -i intersect_file -o genotype_output 
    
 2. Filtering Steps
+
     Filter Genotype file to get only snps in coding regions. Get snps with SNPs with MAF > 0.01, minor allele count >= 3, HWE > 0.001. snp list = /storage/cynthiawu/trans_eQTL/GTex_filteredsnps_pos.txt
    - filter_snps.py -i input_preprocess_genotype_file -s filtered_snp_list -o output_file -c chr_number
    
