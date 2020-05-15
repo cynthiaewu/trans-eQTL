@@ -52,12 +52,6 @@ c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
  python filter_snps.py -i ../Nerve-Tibial/chr1/GTExNormalizedSNPGenotypes_chr1_samplename_inter_coding.table -o ../Nerve-Tibial/chr1/GTExNormalizedSNPGenotypes_chr1_samplename_inter_coding_filtered.table
  ```
  
- Get the European sample for the genotype and expression files
- - get_european_samples.py -i input_file -e european_samples_file -t type_file (0 for genotype, 1 for expression) -o data_euro_output
- 
- Get the covariates for the European samples
- - get_european_samples_covariates.py -i input_covariate_file -e european_samples_file -o cov_euro_output
- 
  ## Steps
 1. Intersect expression and genotype files to get intersecting samples. Keep only the intersecting columns of the expression and covariate file. 
    - find_sample_intersect.py -g input_genotype_file -e input_expression_file -c input_covariates_file -i intersect_output -p expression_output -q covariates_output
@@ -72,6 +66,12 @@ c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
    
     Filter Expression file. Get protein coding genes and genes with rpkm > 0.1 in at least 10 samples.
    - filter_genes.py -i input_file -o out_filtered_file
+ 
+  Get the European sample for the genotype and expression files
+ - get_european_samples.py -i input_file -e european_samples_file -t type_file (0 for genotype, 1 for expression) -o data_euro_output
+ 
+ Get the covariates for the European samples
+ - get_european_samples_covariates.py -i input_covariate_file -e european_samples_file -o cov_euro_output
  
 3. Run Matrix eQTL
    - gene-SNP_pairs.R input_coding_genotype_file input_intersect_expression_file pca_file output
