@@ -75,15 +75,15 @@ c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
     filter_genes.py -i input_file -o out_filtered_file
     ```
     
-  Get the European sample for the genotype and expression files
-  ```
- get_european_samples.py -i input_file -e european_samples_file -t type_file (0 for genotype, 1 for expression) -o data_euro_output
-  ```
+    Get the European sample for the genotype and expression files
+    ```
+    get_european_samples.py -i input_file -e european_samples_file -t type_file (0 for genotype, 1 for expression) -o data_euro_output
+    ```
  
- Get the covariates for the European samples
- ```
- get_european_samples_covariates.py -i input_covariate_file -e european_samples_file -o cov_euro_output
- ```
+    Get the covariates for the European samples
+    ```
+    get_european_samples_covariates.py -i input_covariate_file -e european_samples_file -o cov_euro_output
+    ```
  
 3. Run Matrix eQTL
    ```
