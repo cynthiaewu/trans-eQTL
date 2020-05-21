@@ -6,7 +6,7 @@ def getValues(input, p_out, z_out):
     #data = pd.read_csv('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls.csv', sep='\t')
     data = pd.read_csv(input, sep='\t')
     data_sorted = data.sort_values(["SNP", "gene"], ascending=[True, True])
-    genes = list(data_sorted[0:28315]['gene'])
+    genes = list(data_sorted[0:16485]['gene'])
 
     cur_snp = ''
     cur_zrow = []

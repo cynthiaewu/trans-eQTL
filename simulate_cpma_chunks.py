@@ -18,12 +18,14 @@ def simulateZscores(zfile, efile, qfile, output, n):
     #print(mean_zscores.shape)
 
     #e_values = np.loadtxt('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_evalues.csv', dtype=complex, delimiter='\t')
-    e_values = (np.loadtxt(efile, dtype=complex, delimiter='\t')).real
+    #e_values = (np.loadtxt(efile, dtype=complex, delimiter='\t')).real
+    e_values = (np.loadtxt(efile, delimiter='\t'))
     n_genes = len(e_values)
     print(n_genes)
     print('e_values file read')
     #Q = np.loadtxt('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_Q.csv', dtype=complex, delimiter='\t')
-    Q = (np.loadtxt(qfile, dtype=complex, delimiter='\t')).real
+    #Q = (np.loadtxt(qfile, dtype=complex, delimiter='\t')).real
+    Q = (np.loadtxt(qfile, delimiter='\t'))
     print('Q file read')
     diag_e_values = np.diag(e_values)
     E = np.sqrt(diag_e_values)
@@ -35,12 +37,12 @@ def simulateZscores(zfile, efile, qfile, output, n):
     e_matrix = np.dot(Q, E)
    
     sim_cpma = []
-    iterations = math.ceil(n/5000)
+    iterations = math.ceil(n/30000)
     #print(iterations)
     sim_undone = n
     #perform in chunks of 1000
     for i in range(iterations):
-        cur_n = min(5000, sim_undone)
+        cur_n = min(30000, sim_undone)
         sim_undone = sim_undone - cur_n
         print(n-sim_undone)
 

@@ -1,38 +1,56 @@
-import pandas as pd
 import argparse
+import numpy as np
+import sqlite3
+import pandas as pd
 
+def getRegions(input, snps_file, output, chr):
+    #genotype_all = pd.read_csv('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/GTExNormalizedSNPGenotypes_chr1_samplename_inter.table', sep='\t')
+    genotype_all = pd.read_csv(input, sep='\t')
+    coding_regions = pd.read_csv('/storage/mgymrek/gtex/annotations/coding.bed', skiprows=1, header=None, sep='\t')
+    coding_regions = coding_regions.loc[coding_regions[0].isin([f'chr{chr}'])]
+    #coding_regions = coding_regions.loc[coding_regions[0].isin([f'chr{chr}', 'chr1_gl000191_random', 'chr1_gl000192_random'])]
+    coding_regions.columns = ['chr', 'start', 'end', 'region', '0', 'strand']
+    genotype_all = genotype_all.join(genotype_all['chrom_start'].str.split('_', 1, expand=True).rename(columns={0:'chr', 1:'pos'}))
+    #print(genotype_all.columns)
+    genotype_all['pos'] = genotype_all['pos'].astype(int)
+    print('tables read')
 
-def filter_snps(input, output):
-    info_formatted = pd.read_csv('/storage/cynthiawu/trans_eQTL/GTEx_snp_AC_AF_HWE_formatted.txt', sep='\t')
-    #snps = pd.read_csv('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr2/GTExNormalizedSNPGenotypes_inter_coding_chr2.table', sep='\t')
-    snps = pd.read_csv(input, sep='\t')
-    snps_info = snps.join(info_formatted.set_index('Position'), on='chrom_start', how='left')
-    snps_info = snps_info.dropna()
-    keep = []
-    for index, row in snps_info.iterrows():
-        ac = False
-        af = False
-        for count in row['AC'].split(','):
-            if int(count) >= 3:
-                ac = True
-        for freq in row['AF'].split(','):
-            if float(freq) >= 0.01:
-                af = True
-        if ac & af & (row['HWE'] >= 0.01):
-            keep.append(True)
-        else:
-            keep.append(False)
-    filtered_snps_info = snps_info[keep]
-    final_snps = filtered_snps_info.drop(columns = ['AC', 'AF', 'HWE'])
-    final_snps.to_csv(output, index=False, header=True, sep='\t')
+    #Make the db in memory
+    conn = sqlite3.connect(':memory:')
+    #write the tables
+    coding_regions.to_sql('coding', conn, index=False)
+    genotype_all.to_sql('genotype', conn, index=False)
+    print('tables saved in sql')
 
+    qry = '''
+        select 
+        *
+        from
+            genotype join coding on
+            pos between start and end
+       '''
+    df = pd.read_sql_query(qry, conn)
+
+    df = df.drop(columns=['chr', 'pos', 'start', 'end', 'region', '0', 'strand'])
+    df = df.drop_duplicates()
+    print('tables finished')
+
+    # /storage/cynthiawu/trans_eQTL/GTex_filteredsnps_pos.txt
+    with open(snps_file) as f:
+        snp_pos = f.read().splitlines() 
+
+    df = df[df['chrom_start'].isin(snp_pos)]
+    #df.to_csv('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/GTExNormalizedSNPGenotypes_chr1_samplename_inter_coding.table', sep='\t')
+    df.to_csv(output, sep='\t', index=False)
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", required=True, help="Input genotype file")
-    parser.add_argument("-o", "--output", required=True, help="Ouptput filtered genotype file, snps with AC >= 3, AF >= 0.01, HWE >= 0.01")
+    parser.add_argument("-s", "--snps_file", required=True, help="Input file with the formatted snp position that passed filters")
+    parser.add_argument("-o", "--output", required=True, help="Output file with genotype for coding regions")
+    parser.add_argument("-c", "--chr", required=True, help="Chromosome Number")
     params = parser.parse_args()
-    filter_snps(params.input, params.output)
+    getRegions(params.input, params.snps_file, params.output, params.chr)
 
 
 if __name__ == "__main__":
