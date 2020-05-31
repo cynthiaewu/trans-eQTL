@@ -3,81 +3,78 @@ import subprocess
 import os
 import argparse
 
-def get_edit_freq(input, sample, chr, mutation, output):
-	chr = "chr" + chr
-	beginning = int(mutation)-500
-	end = int(mutation)+500
-	file1 = os.path.join(input, sample + "_R1_001.fastq.gz")
-	file2 = os.path.join(input, sample + "_R2_001.fastq.gz")
-	bam = sample + ".bam"
-	bam_mutation = f'{sample}_{chr}_{beginning}_{end}.bam'
-	# bam_mutation = sample + "_" + chr + "_" + str(beginning) + "_" + str(end) + ".bam"
+def cpma_pipeline(genotype, expression, tissue, covariate, european, output):
+    genotype_file1 = genotype + '/GTExNormalizedSNPGenotypes_chr1.table.gz'
+    intersect_file = f'{output}/intersect_samples.txt'
+    expression_inter = f'{output}/Clean_expression_{tissue}_inter'
+    covariates_inter = f'{output}/gtex650_{tissue}_intersect.pca'
+    intersect_cmd = f'python find_sample_intersect.py -g {genotype_file1} -e {expression} -c {covariate} -i {intersect_file} -p {expression_inter} -q {covariates_inter}'.split(' ')
+    #intersect = subprocess.Popen(intersect_cmd).wait()
+    print('Intersecting Files Done')
 
-	output_path = os.path.join(output, sample)
-	if not os.path.isdir(output_path):
-		os.mkdir(output_path)
-	# subprocess.call(["mkdir", sample])
+    for i in range(1, 23):
+        output_path = os.path.join(output, f'chr{i}')
+        if not os.path.isdir(output_path):
+            os.mkdir(output_path)
+    # subprocess.call(["mkdir", sample])
 
-	# minimap_cmd = f'minimap2 -t 10 -ax sr hg38.mni {file1} {file2}'.split(' ')
-	minimap = subprocess.Popen(["minimap2", "-t", "10", "-ax", "sr", "hg38_sr.mni", file1, file2], stdout=subprocess.PIPE)
-	sam_view = subprocess.Popen(["samtools", "view", "-b"], stdin=minimap.stdout, stdout=subprocess.PIPE)
-	# minimap.stdout.close()
+    genotype_inter = f'GTExNormalizedSNPGenotypes_inter'
+    for i in range(1, 3):
+        preprocess_cmd = f'python preprocess_genotypefile.py -g {genotype}/GTExNormalizedSNPGenotypes_chr{i}.table.gz -i {intersect_file} -o {output}/chr{i}/{genotype_inter}_chr{i}'.split(' ')
+        #print(preprocess_cmd)
+        #preprocess = subprocess.Popen(preprocess_cmd).wait()
+        print(f'Finished preprocessing chr{i}')
+    print('Preprocessing Genotype Files Done')
 
-	bam_path = os.path.join(output_path, bam)
-	print(bam_path)
-	with open(bam_path, "w") as f:
-		sam_sort = subprocess.Popen(["samtools", "sort", "-@10"], stdin=sam_view.stdout, stdout=f).wait()
-	print("Finished sam_sort")
-	# sam_view.stdout.close()
+    genotype_filter = f'{genotype_inter}_filter'
+    filtered_snp_list = '/storage/cynthiawu/trans_eQTL/GTex_filteredsnps_pos.txt'
+    for i in range(1, 3):
+        filtersnp_cmd = f'python filter_snps.py -i {output}/chr{i}/{genotype_inter}_chr{i} -s {filtered_snp_list} -o {output}/chr{i}/{genotype_filter}_chr{i} -c {i}'.split(' ')
+        #filtersnp = subprocess.Popen(filtersnp_cmd).wait()
+        print(f'Finished Filtering chr{i}')
+    print('Filtering Snps Done')
+    
+    expression_filter = f'{expression_inter}_filter'
+    filtergene_cmd = f'python filter_genes.py -i {expression_inter} -o {expression_filter}'.split(' ')
+    #filtergene = subprocess.Popen(filtergene_cmd).wait()
+    print('Filtering Genes Done')
+    
+    finalgenofile = genotype_filter
+    finalexpfile = expression_filter
+    if european == 1:
+        eurosamp = '/storage/cynthiawu/trans_eQTL/European_samples.txt'
+        finalgenofile = f'{genotype_filter}_european'
+        for i in range(1, 3):
+            eurogeno_cmd = f'python get_european_samples.py -i {output}/chr{i}/{genotype_filter}_chr{i} -e {eurosamp} -t 0 -o {output}/chr{i}/{finalgenofile}_chr{i}'.split(' ')
+            print(eurogeno_cmd)
+            eurogeno = subprocess.Popen(eurogeno_cmd).wait()
+            print(f'Obtained European samples for chr{i}')
+        finalexpfile = f'{expression_filter}_european'
+        euroexp_cmd = f'python get_european_samples.py -i {expression_filter} -e {eurosamp} -t 1 -o {finalexpfile}'.split(' ')
+        euroexp = subprocess.Popen(euroexp_cmd).wait()
+        print('Obtained European samples for expression data')
+        eurocovar_cmd = f'python get_european_samples_covariates.py -i {covariates_inter} -e {eurosamp} -o {output}/gtex650_eurosamp_covariates.pca'.split(' ')
+        eurocovar = subprocess.Popen(eurocovar_cmd).wait()
+        print('Obtained European samples for covariates')
 
-	bam_mutation_path = os.path.join(output_path, bam_mutation)
-	print(bam_mutation_path)
-	subprocess.call(["samtools", "index", bam_path])
-	view_window = chr + ":" + str(beginning) + "-" + str(end)
-	with open(bam_mutation_path, "w") as f:
-		subprocess.Popen(["samtools", "view", "-b", bam_path, chr, view_window], stdout=f).wait()
-
-	#sam_index_cmd = f'minimap2 -t 10 -ax sr hg38.mni {file1} {file2}'.split(' ')
-
-	readcounts_raw = os.path.join(output_path, sample + "_readcounts_raw.txt")
-	readcounts_path = os.path.join(output_path, readcounts_raw)
-	with open(readcounts_path, "w") as f:
-		subprocess.call(["bam-readcount", "-f", "/storage/cynthiawu/iSeq/hg38.fa", "-w", "1", bam_mutation_path], stdout=f)
-		
-	readcounts = os.path.join(output_path, sample + "_readcounts.txt")
-	subprocess.call(["python", "prepare_readcounts.py", "-i", readcounts_path, "-o", readcounts])
+    '''
+    readcounts = os.path.join(output_path, sample + "_readcounts.txt")
+    subprocess.call(["python", "prepare_readcounts.py", "-i", readcounts_path, "-o", readcounts])
+    '''
 
 def main():
-	parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser()
 
-	parser.add_argument('-i', '--input', type=str, dest='input', help='Input folder with sample')
-	parser.add_argument('-n', '--name', type=str, dest='sample', help='Sample Name')
-	parser.add_argument('-c', '--chr', type=str, dest='chr', help='Chromosome where mutation is')
-	parser.add_argument('-m', '--mutation', type=int, dest='mutation', help='Position where mutation is')
-	parser.add_argument('-o', '--output', type=str, dest='output', help='Destination folder for output')
-	input_values = parser.parse_args()
+    parser.add_argument('-g', '--genotype', type=str, help='Input folder with genotype files')
+    parser.add_argument('-e', '--expression', type=str, help='Input expression file')
+    parser.add_argument('-t', '--tissue', type=str, help='Tissue type')
+    parser.add_argument('-c', '--covariate', type=str, help='Input covariate file')
+    parser.add_argument('-s', '--european', type=int, help='0: Include all samples, 1: Include only European samples')
+    parser.add_argument('-o', '--output', type=str, help='Destination folder for output')
+    input_values = parser.parse_args()
 
-	get_edit_freq(input_values.input, input_values.sample, input_values.chr, input_values.mutation, input_values.output)
+    cpma_pipeline(input_values.genotype, input_values.expression, input_values.tissue, input_values.covariate, input_values.european, input_values.output)
 
 
 if __name__ == '__main__':
-	main()
-'''	
-bam_read = subprocess.Popen(["bam-readcount", "-f", ""], stdin=minimap.stdout, stdout=subprocess.PIPE)
-minimap.stdout.close()
-with open(sample/bam, "w") as f:
-	sam_sort = subprocess.Popen(["samtools", "sort", "-@10"], stdin=sam_view.stdout, stdout=f)
-	
-#output = sam_sort.communicate()
-\
-'''
-
-'''
-minimap2 -t 10 -ax sr GRCh38_latest_genomic.mni file1 file2 | samtools view -b | samtools sort -@10 > sample/bam
-samtools view -b sample/bam chr,_GRCh38.p12_Primary_Assembly:beginning-end >  sample/bam_mutation
-samtools index  sample/bam_mutation
-
-
-/storage/cynthiawu/soft/bam-readcount/bam-readcount/bin/bam-readcount -f GRCh38_latest_genomic.fna -w 1 sample/bam_mutation >  HEP-GFP-R76W_S2_L001_readcounts_raw.txt
-python prepare_readcounts.py -i HEP-GFP-R76W_S2_L001_readcounts_raw.txt -o HEP-GFP-R76W_S2_L001_readcounts.txt
-'''
+    main()
