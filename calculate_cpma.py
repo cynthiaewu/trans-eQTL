@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from numpy import genfromtxt
+import math
 import argparse
 
 
@@ -15,6 +16,8 @@ def calculate_cpma(input, output):
     for i in range(num_snps):
         likelihood = np.mean(np.negative(np.log(pvalues[i][1:])))
         value = -2 * ((((likelihood - 1) * num_genes)/likelihood) - num_genes*np.log(likelihood))
+        if math.isnan(value):
+            value = 0
         cpma.append(value)
 
     snps = pd.read_csv(input, usecols=[0], sep='\t', names = ['snp'], skiprows = 1)

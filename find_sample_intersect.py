@@ -11,11 +11,14 @@ def intersectFiles(geno_file, express_file, cov_file, inter_out, express_out, co
     genotype['start'] = genotype['start'].astype(str)
     genotype['chrom_start'] = genotype[['chrom', 'start']].agg('_'.join, axis=1)
     genotype.columns = genotype.columns.str.replace('-', '.')
-
+    
+    covariates = pd.read_csv(cov_file, sep='\t')
+    # Should include only European samples if European covariates file is chosen
+    cov_col = set(covariates.columns)
     #find intersection between genotype and expression samples
     geno_col = set(genotype.columns)
     exp_col = set(expression.columns)
-    intersect = geno_col.intersection(exp_col)
+    intersect = (geno_col.intersection(exp_col)).intersection(cov_col)
 
    # with open('/storage/cynthiawu/trans_eQTL/intersect_samples.txt', 'w') as f:
     with open(inter_out, 'w') as f:
@@ -26,7 +29,7 @@ def intersectFiles(geno_file, express_file, cov_file, inter_out, express_out, co
     #exp_inter.to_csv('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/Clean_expression_first10_intersect.tsv', sep='\t')
     exp_inter.to_csv(express_out, sep='\t')
     #covariates = pd.read_csv('/storage/cynthiawu/trans_eQTL/gtex650_transpose_index_relabel_tab_samplename.pca', sep='\t')
-    covariates = pd.read_csv(cov_file, sep='\t')
+    #intersect.add('1')
     cov_inter = covariates[intersect]
     #cov_inter.to_csv('/storage/cynthiawu/trans_eQTL/gtex650_transpose_index_relabel_tab_samplename_inter.pca', sep='\t')
     cov_inter.to_csv(cov_out, sep='\t')
