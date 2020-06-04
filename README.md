@@ -75,7 +75,7 @@ c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
     filter_genes.py -i input_file -o out_filtered_file
     ```
     
-    Get the European sample for the genotype and expression files
+    Get the European sample for the genotype and expression files **(Might not be needed)**
     ```
     get_european_samples.py -i input_file -e european_samples_file -t type_file (0 for genotype, 1 for expression) -o data_euro_output
     ```
@@ -91,7 +91,7 @@ c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
    ```
 4. Get the zscores (T-stat) and pvalues in snp by gene format from Matrix eQTL output
    ```
-   get_values.py -i input_matrixeqtl_file -p out_pvalues -z out_zscores
+   get_values.py -i input_matrixeqtl_file -n num_genes -p out_pvalues -z out_zscores
    ```
    
    To merge all zscores file into one file:
