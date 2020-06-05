@@ -113,7 +113,7 @@ c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
    ```
 6. Calculate the gene covariance matrix and mean zscores for genes with zscores file
    ```
-   calculate_cov_meanzscores.py -i input zscores_file -c cov_out -m mzscores_out
+   calculate_cov_meanzscores.py -i input_zscores_file -c cov_out -m mzscores_out
    ```
 7. Calculate the eigendecomposition and mean zscores
    ```
@@ -121,7 +121,7 @@ c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
    ```
 8. Simulate cpma values from normal distribution with gene covariance matrix and mean zscores
    ```
-   simulate_zscores.py -z input_mean_zscores_file -e input_eigenvalues_file -q input_eigenvectors_file -o sim_output -n num_simulations
+   simulate_cpma.py -z input_mean_zscores_file -e input_eigenvalues_file -q input_eigenvectors_file -o sim_output -n num_simulations
    ```
    
    Perform simulations in chunks of 5000
