@@ -111,7 +111,7 @@ def cpma_pipeline(genotype, expression, tissue, covariate, european, output):
     print('Finished calculating empirical pvalues from cpma for all chr')
 
     #Merge all empirical pvalues of all chr to one file
-    all_epvalues = f'{all_out}_empiricalpvaluess'
+    all_epvalues = f'{all_out}_empiricalpvalues'
     cp_cmd = f'cp {output}/chr1/{empirical_file}_chr1 {all_epvalues}'.split(' ')
     cp = subprocess.Popen(cp_cmd).wait()
     for i in range(2, 23):
