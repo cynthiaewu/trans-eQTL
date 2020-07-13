@@ -3,7 +3,7 @@ import subprocess
 import os
 import argparse
 
-def cpma_pipeline(genotype, expression, tissue, covariate, european, output):
+def cpma_pipeline(genotype, expression, tissue, covariate, output):
     genotype_file1 = genotype + '/GTExNormalizedSNPGenotypes_chr1.table.gz'
     intersect_file = f'{output}/intersect_samples.txt'
     expression_inter = f'{output}/Clean_expression_{tissue}_inter'
@@ -149,11 +149,11 @@ def main():
     parser.add_argument('-e', '--expression', type=str, help='Input expression file')
     parser.add_argument('-t', '--tissue', type=str, help='Tissue type')
     parser.add_argument('-c', '--covariate', type=str, help='Input covariate file')
-    parser.add_argument('-s', '--european', type=int, help='0: Include all samples, 1: Include only European samples')
+    #parser.add_argument('-s', '--european', type=int, help='0: Include all samples, 1: Include only European samples')
     parser.add_argument('-o', '--output', type=str, help='Destination folder for output')
     input_values = parser.parse_args()
 
-    cpma_pipeline(input_values.genotype, input_values.expression, input_values.tissue, input_values.covariate, input_values.european, input_values.output)
+    cpma_pipeline(input_values.genotype, input_values.expression, input_values.tissue, input_values.covariate, input_values.output)
 
 
 if __name__ == '__main__':
