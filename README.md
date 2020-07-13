@@ -11,6 +11,9 @@ Covariates:
 
 /storage/cynthiawu/trans_eQTL/gtex650_transpose.pca    
 
+To choose the covariates file (can decide to include only European samples):
+/storage/cynthiawu/trans_eQTL/Covariates
+
 ## Preprocessing Steps
 
 a. Get gene annotations, keep only protein coding genes
@@ -35,25 +38,18 @@ c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
 
  zcat phs000424.v7.pht002742.v7.p2.c1.GTEx_Subject_Phenotypes.GRU.txt.gz| tail -n +11 | awk -F '\t' '{print $2, $4, $5, $15, $35}' OFS='\t' > /storage/cynthiawu/trans_eQTL/gtex_covariates.txt
  
- ## Filtering Scripts
- 
+ ## To run all steps below in one script
+ Input genotype is path to all genotype files. Covariate files can contain all or only European samples.
  ```
- #combined both steps in filter_genes.py
- Get protein coding genes. 
- - filter_genes.py -i input_file -o out_filtered_file
- 
- Get genes with rpkm > 0.1 in at least 10 samples.
- - filter_genes_rpkm.py -i input_file -o out_filtered_file
- 
- Get snps with SNPs with MAF >= 0.1%, minor allele count >= 3, HWE >= 0.01
- - filter_snps.py -i input_file -o out_filtered_file
- - getCodingRegions.py -i input_preprocess_genotype_file -o output_file -c chr_number
- 
- python filter_snps.py -i ../Nerve-Tibial/chr1/GTExNormalizedSNPGenotypes_chr1_samplename_inter_coding.table -o ../Nerve-Tibial/chr1/GTExNormalizedSNPGenotypes_chr1_samplename_inter_coding_filtered.table
+ run_cpma_pipeline.py -g input_genotypes -e input_expression -t tissue -c covariates_file -o output_folder
+ ```
+ Example:
+ ``` 
+ python run_cpma_pipeline.py -g /storage/mgymrek/gtex-estrs/revision/genotypes -e  /storage/szfeupe/Runs/650GTEx_estr/Analysis_by_Tissue/Review_Rerun/Thyroid/Clean_expression.tsv -t Thyroid -c /storage/cynthiawu/trans_eQTL/Covariates/gtex650_Covariates+PCs.txt -o /storage/cynthiawu/trans_eQTL/Thyroid/AllSamples
  ```
  
  ## Steps
-1. Intersect expression and genotype files to get intersecting samples. Keep only the intersecting columns of the expression and covariate file. 
+1. Intersect expression and genotype files to get intersecting samples. Keep only the intersecting columns of the expression and covariate file. Genotype files are for individual chromosomes
    ```
    find_sample_intersect.py -g input_genotype_file -e input_expression_file -c input_covariates_file -i intersect_output -p expression_output -q covariates_output
     ```
