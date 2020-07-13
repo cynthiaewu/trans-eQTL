@@ -131,6 +131,6 @@ c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
    ```
 10. Get qvalues from empirical pvalues
 11. Get consequence annotation for every snp.
-```
-zcat GTEx_Analysis_20150112_WholeGenomeSeq_VarSitesAnnot.vcf.gz| tail -n +146 | awk -F '\t' '{print $1, $2, $8}' | sed -E 's/(.+) (.+) (.+);CSQ=([^|]+)\|([^|]+)\|(.+)/\1 \2 \5/' > /storage/cynthiawu/trans_eQTL/Gtex_snp-consq.txt
-```
+    ```
+    zcat GTEx_Analysis_20150112_WholeGenomeSeq_VarSitesAnnot.vcf.gz| tail -n +146 | awk -F '\t' '{print $1, $2, $8}' | sed -E 's/(.+) (.+) (.+);CSQ=([^|]+)\|([^|]+)\|(.+)/\1 \2 \5/' > /storage/cynthiawu/trans_eQTL/Gtex_snp-consq.txt
+    ```
