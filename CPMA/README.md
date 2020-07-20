@@ -1,4 +1,4 @@
-# trans-eQTL
+# CPMA
 ## Files
 Genotypes:
 /storage/mgymrek/gtex-estrs/revision/genotypes/
