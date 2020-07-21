@@ -17,24 +17,20 @@ def get_noise(num_genes, cov, sample_size):
            for i in range(sample_size)]
 
 
-def write_genofile(array, output):
+def write_xfile(array, output):
     try:
         shape = (array.shape[0], array.shape[1])
     except IndexError:
         shape = (array.shape[0], 1)
-    ncol = shape[0]
-    nrow = shape[1]
-    col = ['Sample' + str(i) for i in range(ncol)]
-    row = ['SNP' + str(i) for i in range(nrow)]
+    col = ['Sample' + str(i) for i in range(shape[0])]
+    row = ['SNP' + str(i) for i in range(shape[1])]
     df = pd.DataFrame(array.reshape(1, -1), index=row, columns=col)
     df.to_csv(f'{output}/genotypen.csv', index=True, header=True, sep='\t')
 
 
 def write_yfile(array, output):
-    nrow = len(array)
-    ncol = len(array[0])
-    col = ['Sample' + str(i) for i in range(ncol)]
-    row = ['Gene' + str(i) for i in range(nrow)]
+    col = ['Sample' + str(i) for i in range(len(array[0]))]
+    row = ['Gene' + str(i) for i in range(len(array))]
     df = pd.DataFrame(array, index=row, columns=col)
     df.to_csv(f'{output}/expression.csv', index=True, header=True, sep='\t')
 
@@ -52,15 +48,14 @@ def model(config, beta_file, cov_file, seed, output):
     allele_freq = params['allele_freq']
     sample_size = params['sample_size']
 
-    genotypes = generate_genotypes(sample_size=sample_size,
+    X = generate_genotypes(sample_size=sample_size,
                                    allele_freq=allele_freq)
     noise = get_noise(num_genes=num_genes,
                       cov=cov,
                       sample_size=sample_size)
 
-    X = np.outer(beta, genotypes)
-    Y = X + np.array(noise).T
-    write_genofile(genotypes, output)
+    Y = np.outer(beta, X)  + np.array(noise).T
+    write_xfile(X, output)
     write_yfile(Y, output)
     print(f'Var: {np.var(Y)}')
 
