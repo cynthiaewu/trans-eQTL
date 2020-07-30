@@ -35,9 +35,8 @@ def write_yfile(array, output):
     df.to_csv(f'{output}/expression.csv', index=True, header=True, sep='\t')
 
 
-def model(num_genes, allele_freq, sample_size, beta_file, cov_file, output):
+def model(num_genes, allele_freq, sample_size, beta_file, cov, output):
     beta = np.loadtxt(beta_file)
-    cov = np.loadtxt(cov_file)
 
     X = generate_genotypes(sample_size=sample_size,
                                    allele_freq=allele_freq)
@@ -51,7 +50,7 @@ def model(num_genes, allele_freq, sample_size, beta_file, cov_file, output):
     print(f'Var: {np.var(Y)}')
 
 
-def iter_model(config, sim_prefix, seed, iterations, output):
+def iter_model(config, seed, iterations, output):
     print(f'Seed = {seed}')
     np.random.seed(seed)
     with open(config) as f:
@@ -60,22 +59,32 @@ def iter_model(config, sim_prefix, seed, iterations, output):
     num_genes = params['num_genes']
     allele_freq = params['allele_freq']
     sample_size = params['sample_size']
+    identity = params['identity']
+    if identity:
+        cov = np.identity(num_genes)
+        #cov_file = f'{output}cov.txt'
+        #cov = np.loadtxt(cov_file)
+        print('Identiy covariance matrix created')
+    sim_prefix = 'Simulation'
     for i in range(iterations):
         folder = f'{output}{sim_prefix}_{i}/'
-        model(num_genes, allele_freq, sample_size, f'{folder}beta.txt', f'{folder}cov.txt', f'{folder}')
+        if not identity:
+            cov_file = f'{folder}cov.txt'
+            cov = np.loadtxt(cov_file)
+        model(num_genes, allele_freq, sample_size, f'{folder}beta.txt', cov, f'{folder}')
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", required=True, help="Input config file with parameters")
-    parser.add_argument("-p", "--sim_prefix", required=True, help="Prefix for folders of simulated files (cov matrix and beta files)")
+    #parser.add_argument("-p", "--sim_prefix", required=True, help="Prefix for folders of simulated files (cov matrix and beta files)")
     parser.add_argument("-s", "--seed", type=int, default=0, help="Seed for random generator")
     parser.add_argument("-i", "--iterations", type=int, required=True, help="# iterations to simulate genotype and expression files")
     parser.add_argument("-o", "--output", required=True, help="Output folder with simulated files")
     params = parser.parse_args()
 
     iter_model(config=params.config,
-          sim_prefix=params.sim_prefix,
+          #sim_prefix=params.sim_prefix,
           seed=params.seed,
           iterations=params.iterations,
           output=params.output)
