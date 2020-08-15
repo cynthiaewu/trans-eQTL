@@ -10,6 +10,7 @@ def calculate_values(covfile, e_out, q_out):
 
     e_values, Q = LA.eig(cov)
     e_values = e_values.real
+    e_values[e_values < 0] = 0
     Q = Q.real
     #np.savetxt('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_evalues.csv', e_values, delimiter='\t')
     #np.savetxt('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_Q.csv', Q, delimiter='\t')
