@@ -18,34 +18,25 @@ def generate_identity(num_genes):
     return np.identity(num_genes)
 
 
-def generate_beta(num_genes, num_targets, num_snps, num_nullsnps, beta_sd, beta_value):
+def generate_beta(num_genes):
     
     all_betas = []
     #t3 = time.time()
     #print(f'Beta zeros created: {t3-t2}')
     
     #targets = np.random.normal(0, 0.1, num_targets)
-    for i in range(num_snps-num_nullsnps):
-        beta = np.zeros(num_genes)
-        if beta_sd == 'fixed':
-            targets = np.full(num_targets, beta_value)
-        else:
-            targets = np.random.normal(0, beta_sd, num_targets)
-    #t4 = time.time()
-    #print(f'Targets created: {t4-t3}')
-        beta[:num_targets] = targets
-        all_betas.append(beta)
+    #targets = [20, 40, 50, 60, 80, 100, 150, 200]
+    targets = [400, 600, 800, 1000, 1250, 1500, 1750, 2000]
+    fixed_betas = [0.1, 0.2, 0.3, 0.4, 0.5]
+    for num_t in targets:
+        for beta_value in fixed_betas: 
+            beta = np.zeros(num_genes)
+            values = np.full(num_t, beta_value) 
+            beta[:num_t] = values
+            # iterations
+            for i in range(100):
+                all_betas.append(beta)
 
-    for i in range(num_nullsnps):
-        all_betas.append((np.zeros(num_genes)))
-    #print(all_betas)
-    #t5 = time.time()
-    #print(f'Betas combined: {t5-t4}')
-    
-    #targets = truncnorm.rvs(0.5, 1, size=num_targets)
-    #sign = np.random.choice([-1, 1], num_targets)
-    #beta = np.concatenate([targets*sign, np.zeros(genes-num_targets)])
-    #beta = np.concatenate([targets, np.zeros(genes-num_targets)])
     return all_betas
 
 
@@ -58,7 +49,7 @@ def generator(num_genes, num_targets, identity, num_snps, num_nullsnps, beta_sd,
         #print(f'Cov matrix created: {t1-t0}')
         #t0 = time.time()
         #print(f'Cov matrix saved: {t0-t1}')
-    beta = generate_beta(num_genes, num_targets, num_snps, num_nullsnps, beta_sd, beta_value)
+    beta = generate_beta(num_genes)
     np.savetxt(f'{output}/beta.txt', beta)
     #t6 = time.time()
 
