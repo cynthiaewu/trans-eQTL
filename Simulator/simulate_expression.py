@@ -18,7 +18,8 @@ def generate_genotypes(sample_size, allele_freq, num_snps):
 
 
 def get_noise(num_genes, cov, sample_size):
-    return [np.random.multivariate_normal(np.zeros(num_genes), cov) for i in range(sample_size)]
+    return np.random.multivariate_normal(np.zeros(num_genes), cov, size=sample_size)
+    #return [np.random.multivariate_normal(np.zeros(num_genes), cov) for i in range(sample_size)]
 
 
 def write_xfile(array, num_snps, output):

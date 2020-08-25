@@ -18,12 +18,15 @@ def generate_genotypes(sample_size, allele_freq, num_snps):
     return np.array(genotype)
 
 
-def get_noise(num_genes, noise_matrix, sample_size):
-    choice = random.randint(0, len(noise_matrix)-1)
-    noise = []
-    for i in range(sample_size):
-        noise.append(noise_matrix[choice])
-    return noise
+#def get_noise(num_genes, noise_matrix, sample_size):
+def get_noise(num_genes, sample_size):
+    return [np.random.normal(0, 1, num_genes) for i in range(sample_size)]
+
+    #choice = random.randint(0, len(noise_matrix)-1)
+    #noise = []
+    #for i in range(sample_size):
+    #    noise.append(noise_matrix[choice])
+    #return noise
 
 
 def write_xfile(array, num_snps, output):
@@ -53,7 +56,7 @@ def write_yfile(array, output):
     df.to_csv(f'{output}/expression.csv', index=True, header=True, sep='\t')
 
 
-def model(num_genes, allele_freq, sample_size, num_snps, beta_file, noise_matrix, output):
+def model(num_genes, allele_freq, sample_size, num_snps, beta_file, output):
     
     beta = np.loadtxt(beta_file)
     print('starting generating genotypes')
@@ -72,7 +75,7 @@ def model(num_genes, allele_freq, sample_size, num_snps, beta_file, noise_matrix
     print('finished computing summation of beta and genotype')
     print('starting getting noise')
     
-    noise = get_noise(num_genes, noise_matrix, sample_size)
+    noise = get_noise(num_genes, sample_size)
     print('finished getting noise')
     #print(np.array(noise).shape)
     Y = sum_X + np.array(noise).T
@@ -84,7 +87,7 @@ def model(num_genes, allele_freq, sample_size, num_snps, beta_file, noise_matrix
     #print(f'Var: {np.var(Y)}')
 
 
-def iter_model(config, noise_file, seed, iterations, output):
+def iter_model(config, seed, iterations, output):
     print(f'Seed = {seed}')
     np.random.seed(seed)
     with open(config) as f:
@@ -95,7 +98,7 @@ def iter_model(config, noise_file, seed, iterations, output):
     sample_size = params['sample_size']
     num_snps = params['num_snps']
     identity = params['identity']
-    noise_matrix = np.loadtxt(noise_file)
+    #noise_matrix = np.loadtxt(noise_file)
     if identity:
         cov = np.identity(num_genes)
         #cov_file = f'{output}cov.txt'
@@ -107,14 +110,14 @@ def iter_model(config, noise_file, seed, iterations, output):
         if not identity:
             cov_file = f'{folder}cov.txt'
             cov = np.loadtxt(cov_file)
-        model(num_genes, allele_freq, sample_size, num_snps,  f'{folder}beta.txt', noise_matrix, f'{folder}')
+        model(num_genes, allele_freq, sample_size, num_snps,  f'{folder}beta.txt', f'{folder}')
         print(f'Simulation {i}')
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", required=True, help="Input config file with parameters")
-    parser.add_argument("-n", "--noise", required=True, help="Input noise matrix to randomly draw noise from")
+    #parser.add_argument("-n", "--noise", required=True, help="Input noise matrix to randomly draw noise from")
     #parser.add_argument("-p", "--sim_prefix", required=True, help="Prefix for folders of simulated files (cov matrix and beta files)")
     parser.add_argument("-s", "--seed", type=int, default=0, help="Seed for random generator")
     parser.add_argument("-i", "--iterations", type=int, required=True, help="# iterations to simulate genotype and expression files")
@@ -122,7 +125,7 @@ def main():
     params = parser.parse_args()
 
     iter_model(config=params.config,
-          noise_file=params.noise,
+          #noise_file=params.noise,
           seed=params.seed,
           iterations=params.iterations,
           output=params.output)
