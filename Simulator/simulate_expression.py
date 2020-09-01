@@ -83,7 +83,8 @@ def iter_model(config, seed, iterations, output):
         if not identity:
             cov_file = f'{folder}cov.txt'
             cov = np.loadtxt(cov_file)
-        model(num_genes, allele_freq, sample_size, num_snps,  f'{folder}beta.txt', cov, f'{folder}')
+        #model(num_genes, allele_freq, sample_size, num_snps,  f'{folder}beta.txt', cov, f'{folder}')
+        model(num_genes, allele_freq, sample_size, num_snps,  f'{output}/beta.txt', cov, f'{folder}')
         print(f'Simulation {i}')
 
 

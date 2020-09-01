@@ -18,7 +18,7 @@ def generate_identity(num_genes):
     return np.identity(num_genes)
 
 
-def generate_beta(num_genes, targets, fixed_betas):
+def generate_beta(num_genes, targets, fixed_betas, rep):
     
     all_betas = []
     #t3 = time.time()
@@ -35,13 +35,13 @@ def generate_beta(num_genes, targets, fixed_betas):
             values = np.full(num_t, beta_value) 
             beta[:num_t] = values
             # iterations
-            for i in range(100):
+            for i in range(rep):
                 all_betas.append(beta)
 
     return all_betas
 
 
-def generator(num_genes, num_targets, identity, num_snps, num_nullsnps, beta_sd, beta_value, output):
+def generator(num_genes, num_targets, identity, num_snps, num_nullsnps, beta_sd, beta_value, output_path, output, rep):
     #t0 = time.time()
     if not identity:
         cov_matrix = generate_cov(num_genes)
@@ -50,13 +50,13 @@ def generator(num_genes, num_targets, identity, num_snps, num_nullsnps, beta_sd,
         #print(f'Cov matrix created: {t1-t0}')
         #t0 = time.time()
         #print(f'Cov matrix saved: {t0-t1}')
-    beta = generate_beta(num_genes, num_targets, beta_value)
+    beta = generate_beta(num_genes, num_targets, beta_value, rep)
     np.savetxt(f'{output}/beta.txt', beta)
     #t6 = time.time()
 
 
 def iter_generator(config, seed, iterations, output):
-    print(f'Seed = {seed}')
+    #print(f'Seed = {seed}')
     np.random.seed(seed)
     with open(config) as f:
         params = yaml.load(f)
@@ -67,6 +67,7 @@ def iter_generator(config, seed, iterations, output):
     identity = params['identity']
     beta_sd = params['beta_sd']
     beta_value = params['beta_value']
+    rep = params['rep']
     #if identity:
     #    cov_matrix = generate_identity(num_genes)
     #    np.savetxt(f'{output}/cov.txt', cov_matrix)
@@ -76,7 +77,7 @@ def iter_generator(config, seed, iterations, output):
         output_path = os.path.join(output, f'Simulation_{i}')
         if not os.path.isdir(output_path):
             os.mkdir(output_path)
-        generator(num_genes, num_targets, identity, num_snps, num_nullsnps,  beta_sd, beta_value, output_path)
+        generator(num_genes, num_targets, identity, num_snps, num_nullsnps,  beta_sd, beta_value, output_path, output, rep)
 
 
 def main():

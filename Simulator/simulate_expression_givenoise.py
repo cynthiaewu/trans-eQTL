@@ -59,6 +59,9 @@ def write_yfile(array, output):
 def model(num_genes, allele_freq, sample_size, num_snps, beta_file, output):
     
     beta = np.loadtxt(beta_file)
+    #print(beta[0])
+    if num_snps == 1:
+        beta = beta.reshape(1, -1)
     print('starting generating genotypes')
     X = generate_genotypes(sample_size=sample_size, allele_freq=allele_freq, num_snps=num_snps)
     print('finished generating genotypes')
@@ -110,7 +113,8 @@ def iter_model(config, seed, iterations, output):
         if not identity:
             cov_file = f'{folder}cov.txt'
             cov = np.loadtxt(cov_file)
-        model(num_genes, allele_freq, sample_size, num_snps,  f'{folder}beta.txt', f'{folder}')
+        print(f'{output}/beta.txt')
+        model(num_genes, allele_freq, sample_size, num_snps,  f'{output}/beta.txt', f'{folder}')
         print(f'Simulation {i}')
 
 
