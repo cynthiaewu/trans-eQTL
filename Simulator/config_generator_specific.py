@@ -71,6 +71,8 @@ def iter_generator(config, seed, iterations, output):
     #if identity:
     #    cov_matrix = generate_identity(num_genes)
     #    np.savetxt(f'{output}/cov.txt', cov_matrix)
+
+    #print(f'Starting config generator for #targets: {num_targets} and beta: {beta_value}')
         
 
     for i in range(iterations):
@@ -78,7 +80,8 @@ def iter_generator(config, seed, iterations, output):
         if not os.path.isdir(output_path):
             os.mkdir(output_path)
         generator(num_genes, num_targets, identity, num_snps, num_nullsnps,  beta_sd, beta_value, output_path, output, rep)
-
+    print(f'Finished config generator for #targets: {num_targets} and beta: {beta_value}')
+   
 
 def main():
     parser = argparse.ArgumentParser()

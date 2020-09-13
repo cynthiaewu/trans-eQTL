@@ -2,12 +2,13 @@ import subprocess
 import argparse
 
 
-def sim_cpma_pipeline(input_folder, samplesize):
+def sim_cpmax_pipeline(input_folder, samplesize):
     targets = [ 0, 20, 40, 60, 80, 100, 150, 200, 250, 300, 350, 400, 450, 500, 700, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000, 14000, 15000]
     #targets = [0, 20, 40]
     beta_values = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 1]
     #beta_values = [0, 0.1, 1]
 
+    '''
     metaconfig_cmd = f'python write_metaconfig.py -i {input_folder} -s {samplesize}'.split(' ')
     #subprocess.call(metaconfig_cmd)
     print('Finished writing metaconfig files')
@@ -37,12 +38,15 @@ def sim_cpma_pipeline(input_folder, samplesize):
             p.wait()
     print('Finished simulating files')
 
+    '''
+    
     print('Starting running cpma pipeline')
-    for tar in targets:
+   
+   for tar in targets:
         cpma_cmd = []
         for beta in beta_values:
             value = str(beta).replace(".","")
-            cpma_cmd.append(f'python ../CPMA/run_cpma_pipeline_sim.py -f {input_folder}/numTarget_{tar}/Beta_{value} -i 100'.split(' '))
+            cpma_cmd.append(f'python ../CPMA/run_cpmax_pipeline_sim.py -f {input_folder}/numTarget_{tar}/Beta_{value} -i 100'.split(' '))
         cpma_procs = [ subprocess.Popen(i) for i in cpma_cmd]
         for p in cpma_procs:
             p.wait()
@@ -53,18 +57,19 @@ def sim_cpma_pipeline(input_folder, samplesize):
         chidist_cmd = []
         for beta in beta_values:
             value = str(beta).replace(".","")
-            chidist_cmd.append(f'python compute_pvalue_chidist.py -i {input_folder}/numTarget_{tar}/Beta_{value} -t 1 -n 100'.split(' '))
+            chidist_cmd.append(f'python compute_pvalue_chidist.py -i {input_folder}/numTarget_{tar}/Beta_{value} -c 1 -t 1 -n 100'.split(' '))
         chidist_procs = [ subprocess.Popen(i) for i in chidist_cmd]
         for p in chidist_procs:
             p.wait()
     print('Finished comparing to chi distribution')
 
+    
     print('Starting to calculate power')
     for tar in targets:
         power_cmd = []
         for beta in beta_values:
             value = str(beta).replace(".","")
-            power_cmd.append(f'python calculate_power_singleqtl_cpma.py -c {input_folder}/numTarget_{tar}/Beta_{value}/metaconfig.yaml -f {input_folder}/numTarget_{tar}/Beta_{value} -i 100'.split(' '))
+            power_cmd.append(f'python calculate_power_singleqtl_cpma.py -c {input_folder}/numTarget_{tar}/Beta_{value}/metaconfig.yaml -t 1 -f {input_folder}/numTarget_{tar}/Beta_{value} -i 100'.split(' '))
         power_procs = [ subprocess.Popen(i) for i in power_cmd]
         for p in power_procs:
             p.wait()
@@ -78,7 +83,7 @@ def main():
     parser.add_argument("-s", "--samplesize", type=int, default=0, help="Sample size")
     params = parser.parse_args()
 
-    sim_cpma_pipeline(input_folder=params.input_folder,
+    sim_cpmax_pipeline(input_folder=params.input_folder,
           samplesize=params.samplesize)
 
 

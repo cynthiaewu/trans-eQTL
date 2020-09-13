@@ -13,8 +13,8 @@ def generate_genotypes(sample_size, allele_freq, num_snps):
         allele1 = bernoulli.rvs(allele_freq, size=sample_size)
         allele2 = bernoulli.rvs(allele_freq, size=sample_size)
         genotype.append(allele1 + allele2)
-        if i % 500 == 0:
-            print(i)
+        #if i % 500 == 0:
+         #   print(i)
     return np.array(genotype)
 
 
@@ -62,27 +62,27 @@ def model(num_genes, allele_freq, sample_size, num_snps, beta_file, output):
     #print(beta[0])
     if num_snps == 1:
         beta = beta.reshape(1, -1)
-    print('starting generating genotypes')
+    #print('starting generating genotypes')
     X = generate_genotypes(sample_size=sample_size, allele_freq=allele_freq, num_snps=num_snps)
-    print('finished generating genotypes')
+    #print('finished generating genotypes')
    #print(X)
     sum_X = 0
-    print('started computing summation of beta and genotype')
+    #print('started computing summation of beta and genotype')
     for i in range(num_snps):
         sum_X += (np.outer(beta[i], X[i]))
-        if i % 500 == 0:
-            print(i)
+        #if i % 500 == 0:
+        #    print(i)
         #print(beta[i])
         #print(sum_X)
     #print(sum_X.shape)
-    print('finished computing summation of beta and genotype')
-    print('starting getting noise')
+    #print('finished computing summation of beta and genotype')
+    #print('starting getting noise')
     
     noise = get_noise(num_genes, sample_size)
-    print('finished getting noise')
+    #print('finished getting noise')
     #print(np.array(noise).shape)
     Y = sum_X + np.array(noise).T
-    print('finished computing expression')
+    #print('finished computing expression')
     #print(X.shape)
     #Y = np.outer(beta, X)  + np.array(noise).T
     write_xfile(X, num_snps, output)
@@ -91,7 +91,7 @@ def model(num_genes, allele_freq, sample_size, num_snps, beta_file, output):
 
 
 def iter_model(config, seed, iterations, output):
-    print(f'Seed = {seed}')
+    #print(f'Seed = {seed}')
     np.random.seed(seed)
     with open(config) as f:
         params = yaml.load(f)
@@ -106,16 +106,17 @@ def iter_model(config, seed, iterations, output):
         cov = np.identity(num_genes)
         #cov_file = f'{output}cov.txt'
         #cov = np.loadtxt(cov_file)
-        print('Identiy covariance matrix created')
+        #print('Identiy covariance matrix created')
     sim_prefix = 'Simulation'
     for i in range(iterations):
         folder = f'{output}/{sim_prefix}_{i}/'
         if not identity:
             cov_file = f'{folder}cov.txt'
             cov = np.loadtxt(cov_file)
-        print(f'{output}/beta.txt')
+        #print(f'{output}/beta.txt')
         model(num_genes, allele_freq, sample_size, num_snps,  f'{output}/beta.txt', f'{folder}')
-        print(f'Simulation {i}')
+        print(f'Simulation {i}, folder {output}')
+    print(f'Finished simulations for {output}')
 
 
 def main():

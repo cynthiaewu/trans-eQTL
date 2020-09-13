@@ -18,11 +18,15 @@ def compute_pvalue(input, num_test, output):
     df.to_csv(output, sep='\t')
 
 
-def iter_simulations(input, iterations, num_test):
+def iter_simulations(input, cpma_type, iterations, num_test):
     sim_prefix = 'Simulation'
     for i in range(iterations):
-        in_file = f'{input}/{sim_prefix}_{i}/CPMA/gene-snp-eqtl_cpma'
-        out_file = f'{input}/{sim_prefix}_{i}/CPMA/gene-snp-eqtl_cpma_pvalues'
+        if cpma_type==0:
+            in_file = f'{input}/{sim_prefix}_{i}/CPMA/gene-snp-eqtl_cpma'
+            out_file = f'{input}/{sim_prefix}_{i}/CPMA/gene-snp-eqtl_cpma_pvalues'
+        if cpma_type==1:
+            in_file = f'{input}/{sim_prefix}_{i}/CPMAx/gene-snp-eqtl_cpma_topx'
+            out_file = f'{input}/{sim_prefix}_{i}/CPMAx/gene-snp-eqtl_cpmax_pvalues'
         compute_pvalue(in_file, num_test, out_file)
     print(f'finished for {input}')
 
@@ -30,12 +34,14 @@ def iter_simulations(input, iterations, num_test):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", required=True, help="Input file with cpma values per snp")
+    parser.add_argument("-c", "--cpma_type", type=int, required=True, help="0 for cpma or 1 for cpma_topx")
     parser.add_argument("-n", "--iterations", type=int, required=True, help="# iterations to simulate genotype and expression files")
     parser.add_argument("-t", "--num_test", type=int, required=True, help="Number of tests to correct pvalues with")
     #parser.add_argument("-o", "--output", required=True, help="Output file with cpma values, pvalues, adjusted pvalues per snp")
     params = parser.parse_args()
 
     iter_simulations(input=params.input,
+          cpma_type=params.cpma_type,
           iterations=params.iterations,
           num_test=params.num_test)
           #output=params.output)
