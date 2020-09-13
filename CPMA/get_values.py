@@ -18,13 +18,13 @@ def getValues(input, num_genes, p_out, z_out):
     for i in range(iterations):
         current = i * num_genes
         all_pvalues.append(list(data_sorted[current:current+num_genes]['p-value']))
-        all_zscores.append(list(data_sorted[current:current+num_genes]['t-stat']))
+        #all_zscores.append(list(data_sorted[current:current+num_genes]['t-stat']))
 
     pvalue_matrix = pd.DataFrame(all_pvalues, index=snps, columns=genes)
     #pvalue_matrix.to_csv('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_pvalues_nofdr.csv', index=True, header=True, sep='\t')
     pvalue_matrix.to_csv(p_out, index=True, header=True, sep='\t')
-    zscore_matrix = pd.DataFrame(all_zscores, index=snps, columns=genes)
-    zscore_matrix.to_csv(z_out, index=True, header=True, sep='\t')
+    #zscore_matrix = pd.DataFrame(all_zscores, index=snps, columns=genes)
+    #zscore_matrix.to_csv(z_out, index=True, header=True, sep='\t')
 
 def main():
     parser = argparse.ArgumentParser()
