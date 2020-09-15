@@ -26,7 +26,7 @@ def calculate_cpma_topx(input, x, output):
             value = 0
         cpma.append(value)
 
-    print(cpma)
+    #print(cpma)
     snps = pd.read_csv(input, usecols=[0], sep='\t', names = ['snp'], skiprows = 1)
     snps.insert(column = 'cpma', loc = 1, value = cpma)
     #snps.to_csv('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_cpma_nofdr.csv', index=False, header=True, sep='\t')
