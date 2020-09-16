@@ -114,7 +114,7 @@ def iter_model(config, seed, iterations, output):
             cov_file = f'{folder}cov.txt'
             cov = np.loadtxt(cov_file)
         #print(f'{output}/beta.txt')
-        model(num_genes, allele_freq, sample_size, num_snps,  f'{output}/beta.txt', f'{folder}')
+        model(num_genes, allele_freq, sample_size, num_snps,  f'{folder}/beta.txt', f'{folder}')
         print(f'Simulation {i}, folder {output}')
     print(f'Finished simulations for {output}')
 

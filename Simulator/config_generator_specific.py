@@ -18,7 +18,7 @@ def generate_identity(num_genes):
     return np.identity(num_genes)
 
 
-def generate_beta(num_genes, targets, fixed_betas, rep):
+def generate_beta(num_genes, targets, beta_type, fixed_betas, rep):
     
     all_betas = []
     #t3 = time.time()
@@ -29,19 +29,29 @@ def generate_beta(num_genes, targets, fixed_betas, rep):
     #targets = [400, 600, 800, 1000, 1250, 1500, 1750, 2000]
     #targets = [250, 300, 350]
     #fixed_betas = [0.1, 0.2, 0.3, 0.4, 0.5]
-    for num_t in targets:
-        for beta_value in fixed_betas: 
-            beta = np.zeros(num_genes)
-            values = np.full(num_t, beta_value) 
-            beta[:num_t] = values
+    if beta_type == 'sd':
+        for num_t in targets:
+            for beta_sd in fixed_betas: 
+                values = np.random.normal(0, beta_sd, num_t)
+                beta = np.zeros(num_genes)
+                beta[:num_t] = values
             # iterations
-            for i in range(rep):
-                all_betas.append(beta)
+                for i in range(rep):
+                    all_betas.append(beta)
+    if beta_type == 'value':
+        for num_t in targets:
+            for beta_value in fixed_betas: 
+                beta = np.zeros(num_genes)
+                values = np.full(num_t, beta_value) 
+                beta[:num_t] = values
+            # iterations
+                for i in range(rep):
+                    all_betas.append(beta)
 
     return all_betas
 
 
-def generator(num_genes, num_targets, identity, num_snps, num_nullsnps, beta_sd, beta_value, output_path, output, rep):
+def generator(num_genes, num_targets, identity, num_snps, num_nullsnps, beta, beta_sd, beta_value, output_path, output, rep):
     #t0 = time.time()
     if not identity:
         cov_matrix = generate_cov(num_genes)
@@ -50,8 +60,12 @@ def generator(num_genes, num_targets, identity, num_snps, num_nullsnps, beta_sd,
         #print(f'Cov matrix created: {t1-t0}')
         #t0 = time.time()
         #print(f'Cov matrix saved: {t0-t1}')
-    beta = generate_beta(num_genes, num_targets, beta_value, rep)
-    np.savetxt(f'{output}/beta.txt', beta)
+    if beta == 'sd':
+        beta = generate_beta(num_genes, num_targets, beta, beta_sd, rep)
+        np.savetxt(f'{output_path}/beta.txt', beta)
+    if beta == 'value':
+        beta = generate_beta(num_genes, num_targets, beta, beta_value, rep)
+        np.savetxt(f'{output}/beta.txt', beta)
     #t6 = time.time()
 
 
@@ -65,6 +79,7 @@ def iter_generator(config, seed, iterations, output):
     num_snps = params['num_snps']
     num_nullsnps = params['num_nullsnps']
     identity = params['identity']
+    beta = params['beta']
     beta_sd = params['beta_sd']
     beta_value = params['beta_value']
     rep = params['rep']
@@ -79,8 +94,8 @@ def iter_generator(config, seed, iterations, output):
         output_path = os.path.join(output, f'Simulation_{i}')
         if not os.path.isdir(output_path):
             os.mkdir(output_path)
-        generator(num_genes, num_targets, identity, num_snps, num_nullsnps,  beta_sd, beta_value, output_path, output, rep)
-    print(f'Finished config generator for #targets: {num_targets} and beta: {beta_value}')
+        generator(num_genes, num_targets, identity, num_snps, num_nullsnps, beta, beta_sd, beta_value, output_path, output, rep)
+    print(f'Finished config generator for #targets: {num_targets} and beta: {beta_sd}')
    
 
 def main():
