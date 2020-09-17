@@ -9,7 +9,20 @@ For CPMA method, run_simulate_cpma_pipeline.py Input folder is where all the sim
  run_simulate_cpma_topx_pipeline.py
  ```
 # Simulator
-1. Generate metaconfig yaml file to be used for simulations. Input folder must contain the numTarget_x and Beta_x folders. Need to manually edit the parameters desired for simulations in this script. The parameter beta needs to be either "value" or "sd". If it is set to be "value," the parameter beta_value needs to be set to the desired beta effect size value which will be used for all target genes. If the parameter beta is set to be "sd," the beta effect size vallue for the target genes will be drawn from a distribution with mean 0 and SD set in the parameter beta_sd. The parameter num_targets is the #target genes the eqtl is to target. The parameter num_snps is the # of eqtls desired in the simulation. The parameter num_nullsnps is the # of null snps with no beta effect size desired in the simulation. The parameter sample_size is the sample size for the genotype and expression files in the simulations. The parameter allele_freq is used for creating the genotype files for the snps. The parameter identity is set to be True for using the identity matrix to simulate the noise matrix used for simulations or False if a gene covariance matrix is given to simulate the noise matrix. The parameter rep is used for "manysiminone" simulations where one simulation contains multiple eqtls with different parameters. The parameter sig_threshold is used to set the significance for calculating the power of the eqtl methods. **NEED MORE WORK**
+1. Generate metaconfig yaml file to be used for simulations. Input folder must contain the numTarget_x and Beta_x folders. Need to manually edit the parameters desired for simulations in this script. 
+
+- The parameter beta needs to be either "value" or "sd". 
+  - If it is set to be "value," the parameter beta_value needs to be set to the desired beta effect size value which will be used for all target genes. 
+  - If the parameter beta is set to be "sd," the beta effect size vallue for the target genes will be drawn from a distribution with mean 0 and SD set in the parameter beta_sd. 
+- The parameter num_targets is the #target genes the eqtl is to target. 
+- The parameter num_snps is the # of eqtls desired in the simulation. 
+- The parameter num_nullsnps is the # of null snps with no beta effect size desired in the simulation. 
+- The parameter sample_size is the sample size for the genotype and expression files in the simulations. 
+- The parameter allele_freq is used for creating the genotype files for the snps. 
+- The parameter identity is set to be True for using the identity matrix to simulate the noise matrix used for simulations or False if a gene covariance matrix is given to simulate the noise matrix. 
+- The parameter rep is used for "manysiminone" simulations where one simulation contains multiple eqtls with different parameters. 
+- The parameter sig_threshold is used to set the significance for calculating the power of the eqtl methods. 
+**NEED MORE WORK**
    ```
    python write_metaconfig.py -i input_folder -s samplesize
    ```
