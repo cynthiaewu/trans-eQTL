@@ -29,11 +29,11 @@ def get_power(config, method, topx, folder, iterations):
     sim_prefix = 'Simulation'
     all_pvalues = []
     for i in range(iterations):
-        if cpma_type==0:
+        if method==0:
             result_file = f'{folder}/{sim_prefix}_{i}/CPMA/gene-snp-eqtl_cpma_pvalues_fixed'
-        if cpma_type==1:
+        if method==1:
             result_file = f'{folder}/{sim_prefix}_{i}/CPMAx/gene-snp-eqtl_cpmax_pvalues_{topx}'
-        if cpma_type==2:
+        if method==2:
             result_file = f'{folder}/{sim_prefix}_{i}/expressionPCs/gene-snp-eqtl_PCs_cpmax_pvalues_{topx}'
         pvalues = get_pvalues_for_targets(result_file)
         all_pvalues.append(pvalues)
@@ -41,11 +41,11 @@ def get_power(config, method, topx, folder, iterations):
     calculated = [[num_targets[0], beta_value[0], power]]
     print(f'calculated, {folder}')
     power_df = pd.DataFrame(calculated, columns=['#target_genes', 'beta_value', 'power'])
-    if cpma_type==0:
+    if method==0:
         power_df.to_csv(f'{folder}/power_fixed.txt', index=False, sep='\t')
-    if cpma_type==1:
+    if method==1:
         power_df.to_csv(f'{folder}/power_cpmax_{topx}.txt', index=False, sep='\t')
-    if cpma_type==2:
+    if method==2:
         power_df.to_csv(f'{folder}/power_PCs_cpmax_{topx}.txt', index=False, sep='\t')
 
 

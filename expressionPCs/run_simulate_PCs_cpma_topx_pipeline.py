@@ -39,6 +39,7 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
     print('Finished simulating files')
 
     '''
+    '''
     print('Starting computing PCA')
     
     for tar in targets:
@@ -50,6 +51,7 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
         for p in pca_procs:
             p.wait()
     print('Finished computing PCA') 
+    '''
     
     print('Starting running cpma pipeline')
     
@@ -57,7 +59,7 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
         cpma_cmd = []
         for beta in beta_values:
             value = str(beta).replace(".","")
-            cpma_cmd.append(f'python {scripts_folder}/CPMA/run_cpmax_PCs_pipeline_sim.py -f {input_folder}/numTarget_{tar}/Beta_{value} -x {topx} -i 100'.split(' '))
+            cpma_cmd.append(f'python {scripts_folder}/CPMA/run_cpmax_PCs_pipeline_sim.py -f {input_folder}/numTarget_{tar}/Beta_{value} -x {topx} -p {scripts_folder} -i 100'.split(' '))
         cpma_procs = [ subprocess.Popen(i) for i in cpma_cmd]
         for p in cpma_procs:
             p.wait()
