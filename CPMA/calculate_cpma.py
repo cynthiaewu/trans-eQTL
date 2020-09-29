@@ -19,8 +19,11 @@ def calculate_cpma(input, output):
     cpma = []
     # 3623 sniicps
     for i in range(num_snps):
-        likelihood = np.mean(np.negative(np.log(pvalues[i][1:])))
+        #likelihood = np.mean(np.negative(np.log(pvalues[i][1:])))
+        likelihood = 1/(np.mean(np.negative(np.log(pvalues[i][1:]))))
+        #print(likelihood)
         value = -2 * ((((likelihood - 1) * num_genes)/likelihood) - num_genes*np.log(likelihood))
+        #print(value)
         if math.isnan(value):
             value = 0
         cpma.append(value)

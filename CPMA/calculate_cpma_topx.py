@@ -24,9 +24,9 @@ def calculate_cpma_topx(input, x, output):
         all_values = -np.log(all_values)
         top_values = all_values[:top_numgenes]
         bordernum = top_values[-1]
-        print(top_values)
+        #print(top_values)
         def log_likelihood_neg(x):
-            print(x)
+            #print(x)
             log_likelihood = top_numgenes*np.log(x) - \
                              x*np.sum(top_values) + \
                              (num_genes-top_numgenes)*np.log(1-np.exp(-x*bordernum))
@@ -38,12 +38,12 @@ def calculate_cpma_topx(input, x, output):
                                                      x0=1,
                                                      bounds=((10**(-10), None),))
             max_likelihood = max_likelihood.x[0]
-        print(max_likelihood)
+        #print(max_likelihood)
         term1 = (1-max_likelihood)*np.sum(top_values)
         term2 = top_numgenes*np.log(max_likelihood)
         term3 = (num_genes-top_numgenes)*np.log(1-math.exp(-max_likelihood*bordernum))
         term4 = -(num_genes-top_numgenes)*np.log(1-math.exp(-bordernum))
-        print(term1, term2, term3, term4)
+        #print(term1, term2, term3, term4)
         cpmax_value = 2*(term1 + term2 + term3 + term4)
         pvalue = 1 - scipy.stats.chi2.cdf(cpmax_value, 1)
         print(cpmax_value, pvalue)

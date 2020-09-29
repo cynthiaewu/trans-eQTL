@@ -3,41 +3,37 @@ import subprocess
 import os
 import argparse
 
-def cpma_pipeline(input_folder, scripts_folder):
+def cpmax_pipeline(input_folder, scripts_folder, topx):
     genotype = f'{input_folder}/genotype.csv'
-    expression = f'{input_folder}/expression.csv'
-    cpma_folder = os.path.join(input_folder, 'CPMA')
-    if not os.path.isdir(cpma_folder):
-        os.mkdir(cpma_folder)
-    eqtl_file = f'{cpma_folder}/gene-snp-eqtl'
-
-    '''
-    #Perform matrix eQTL to get gene-snp pairs
+    expression = f'{input_folder}/expression_PCs.csv'
+    #cpma_folder = os.path.join(input_folder, 'CPMA')
+    #cpmax_folder = os.path.join(input_folder, 'CPMAx')
+    PCs_folder = os.path.join(input_folder, 'expressionPCs')
+    if not os.path.isdir(cpmax_folder):
+        os.mkdir(PCs_folder)
+    eqtl_file = f'{PCs_folder}/gene-snp-eqtl_PCs'
+    Perform matrix eQTL to get gene-snp pairs
     #matrix_cmd = f'Rscript /storage/cynthiawu/trans_eQTL/Scripts/MatrixeQTL/gene-SNP_pairs.R -g {genotype} -e {expression} -o {eqtl_file}'.split(' ')
     matrix_cmd = f'Rscript {scripts_folder}/MatrixeQTL/gene-SNP_pairs.R -g {genotype} -e {expression} -o {eqtl_file}'.split(' ')
     subprocess.call(matrix_cmd)
     print(f'Finished matrix eQTL, {input_folder}')
 
-    #Obtain zscores and pvalues in a snp by gene matrix format from matrix eQTL output
+    Obtain zscores and pvalues in a snp by gene matrix format from matrix eQTL output
     wc_cmd = f'wc -l {expression}'.split(' ')
     wc = subprocess.Popen(wc_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     stdout, stderr = wc.communicate()
     num_genes = int(stdout.split()[0])-1
-    '''
     pvalue_file = f'{eqtl_file}_pvalue'
-
-    '''
     zscore_file = f'{eqtl_file}_zscore'
     #values_cmd = f'python /storage/cynthiawu/trans_eQTL/Scripts/CPMA/get_values.py -i {eqtl_file} -n {num_genes} -p {pvalue_file} -z {zscore_file}'.split(' ')
     values_cmd = f'python {scripts_folder}/CPMA/get_values.py -i {eqtl_file} -n {num_genes} -p {pvalue_file} -z {zscore_file}'.split(' ')
     values = subprocess.Popen(values_cmd).wait()
     print(f'Finished getting pvalues and zscores, {input_folder}')
 
-    '''
     #Calculate cpma values with matrix eqtl pvalues output
-    cpma_file = f'{eqtl_file}_cpma_fixed'
-    #cpma_cmd = f'python /storage/cynthiawu/trans_eQTL/Scripts/CPMA/calculate_cpma.py -i {pvalue_file} -o {cpma_file}'.split(' ')
-    cpma_cmd = f'python {scripts_folder}/CPMA/calculate_cpma.py -i {pvalue_file} -o {cpma_file}'.split(' ')
+    cpma_file = f'{PCs_folder}/gene-snp-eqtl_PCs_cpma_topx_{topx}'
+    #cpma_cmd = f'python /storage/cynthiawu/trans_eQTL/Scripts/CPMA/calculate_cpma_topx.py -i {pvalue_file} -x {topx} -o {cpma_file}'.split(' ')
+    cpma_cmd = f'python {scripts_folder}/CPMA/calculate_cpma_topx.py -i {pvalue_file} -x {topx} -o {cpma_file}'.split(' ')
     cpma = subprocess.Popen(cpma_cmd).wait()
     print(f'Finished calculating cpma, {input_folder}')
 
@@ -71,21 +67,22 @@ def cpma_pipeline(input_folder, scripts_folder):
     '''
 
 
-def iterate_folders(folder, scripts_folder, iterations):
+def iterate_folders(folder, scripts_folder, topx, iterations):
     for i in range(iterations):
         input_folder = f'{folder}/Simulation_{i}'
         print(f'Starting CPMA for Simulation {i}, {folder}')
-        cpma_pipeline(input_folder, scripts_folder)
+        cpmax_pipeline(input_folder, scripts_folder, topx)
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--folder', type=str, help='Input folder with simulated expression and genotype files')
     parser.add_argument('-s', '--scripts_folder', type=str, help='Input folder with scripts')
+    parser.add_argument('-x', '--topx', default=0.1, type=float, help='Top x of genes to be used in cpma calculation (0 to 1)')
     parser.add_argument('-i', '--iterations', type=int, help='# of simulated folders to run cpma pipeline on')
     params = parser.parse_args()
 
-    iterate_folders(folder=params.folder, scripts_folder=params.scripts_folder, iterations=params.iterations)
+    iterate_folders(folder=params.folder, scripts_folder=params.scripts_folder, topx=params.topx, iterations=params.iterations)
 
 
 if __name__ == '__main__':
