@@ -101,6 +101,7 @@ def iter_model(config, seed, iterations, output):
     sample_size = params['sample_size']
     num_snps = params['num_snps']
     identity = params['identity']
+    beta = params['beta']
     #noise_matrix = np.loadtxt(noise_file)
     if identity:
         cov = np.identity(num_genes)
@@ -114,7 +115,13 @@ def iter_model(config, seed, iterations, output):
             cov_file = f'{folder}cov.txt'
             cov = np.loadtxt(cov_file)
         #print(f'{output}/beta.txt')
-        model(num_genes, allele_freq, sample_size, num_snps,  f'{folder}/beta.txt', f'{folder}')
+        if beta == 'sd':
+            beta_location = f'{folder}/beta.txt'
+        if beta == 'value':
+            beta_location = f'{output}/beta.txt'
+
+        #model(num_genes, allele_freq, sample_size, num_snps,  f'{folder}/beta.txt', f'{folder}')
+        model(num_genes, allele_freq, sample_size, num_snps,  beta_location, f'{folder}')
         print(f'Simulation {i}, folder {output}')
     print(f'Finished simulations for {output}')
 

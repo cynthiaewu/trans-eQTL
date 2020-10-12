@@ -4,6 +4,7 @@ import argparse
 
 def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
     targets = [ 0, 20, 40, 60, 80, 100, 150, 200, 250, 300, 350, 400, 450, 500, 700, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000, 14000, 15000]
+    #targets = [80, 100, 150, 200, 250, 300, 350, 400, 450, 500, 700, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000, 14000, 15000]
     #targets = [0, 20, 40]
     beta_values = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 1]
     #beta_values = [0, 0.1, 1]
@@ -52,7 +53,7 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
             p.wait()
     print('Finished computing PCA') 
     '''
-    
+    ''' 
     print('Starting running cpma pipeline')
     
     for tar in targets:
@@ -65,29 +66,29 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
             p.wait()
     print('Finished calculating cpma') 
    
+   
     print('Starting comparing to chi distribution')
     for tar in targets:
         chidist_cmd = []
         for beta in beta_values:
             value = str(beta).replace(".","")
-            chidist_cmd.append(f'python {scripts_folder}/Simulator/compute_pvalue_chidist.py -i {input_folder}/numTarget_{tar}/Beta_{value} -m 1 -x {topx} -t 1 -n 100'.split(' '))
+            chidist_cmd.append(f'python {scripts_folder}/Simulator/compute_pvalue_chidist.py -i {input_folder}/numTarget_{tar}/Beta_{value} -m 2 -x {topx} -t 1 -n 100'.split(' '))
         chidist_procs = [ subprocess.Popen(i) for i in chidist_cmd]
         for p in chidist_procs:
             p.wait()
     print('Finished comparing to chi distribution')
-
+    '''
     
     print('Starting to calculate power')
     for tar in targets:
         power_cmd = []
         for beta in beta_values:
             value = str(beta).replace(".","")
-            power_cmd.append(f'python {scripts_folder}/Simulator/calculate_power_singleqtl_cpma.py -c {input_folder}/numTarget_{tar}/Beta_{value}/metaconfig.yaml -m 1 -x {topx} -f {input_folder}/numTarget_{tar}/Beta_{value} -i 100'.split(' '))
+            power_cmd.append(f'python {scripts_folder}/Simulator/calculate_power_singleqtl_cpma.py -c {input_folder}/numTarget_{tar}/Beta_{value}/metaconfig.yaml -m 4 -x {topx} -f {input_folder}/numTarget_{tar}/Beta_{value} -i 100'.split(' '))
         power_procs = [ subprocess.Popen(i) for i in power_cmd]
         for p in power_procs:
             p.wait()
     print('Finished calculating power')
-
 
 
 def main():

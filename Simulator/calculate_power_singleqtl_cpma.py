@@ -1,11 +1,21 @@
 import pandas as pd
+import numpy as np
+from scipy import stats
 import yaml
 import argparse
 
 
-def get_pvalues_for_targets(result_file):
+def get_pvalues_for_targets(result_file, method):
     results = pd.read_csv(result_file, sep='\t')
-    return float(results['adj_pvalue'])
+    if method==3 or method==4:
+        samplesize = len(results['p-value'])
+        pvalues = results['p-value']
+    if method==3:
+        return min(float(pvalues[0])*samplesize, 1)
+    if method==4:
+        return  stats.kstest((list(pvalues)), 'uniform')[1]
+    else:
+        return float(results['adj_pvalue'])
 
 
 def calculate_power(all_pvalues, sig_threshold):
@@ -33,9 +43,13 @@ def get_power(config, method, topx, folder, iterations):
             result_file = f'{folder}/{sim_prefix}_{i}/CPMA/gene-snp-eqtl_cpma_pvalues_fixed'
         if method==1:
             result_file = f'{folder}/{sim_prefix}_{i}/CPMAx/gene-snp-eqtl_cpmax_pvalues_{topx}'
+        # cpmax on PC expression matrix 
         if method==2:
             result_file = f'{folder}/{sim_prefix}_{i}/expressionPCs/gene-snp-eqtl_PCs_cpmax_pvalues_{topx}'
-        pvalues = get_pvalues_for_targets(result_file)
+        # only matrix eqtl results on PC expression matrix
+        if method==3 or method==4:
+            result_file = f'{folder}/{sim_prefix}_{i}/expressionPCs/gene-snp-eqtl_PCs'
+        pvalues = get_pvalues_for_targets(result_file, method)
         all_pvalues.append(pvalues)
     power = calculate_power(all_pvalues, fdr_sig_threshold)
     calculated = [[num_targets[0], beta_value[0], power]]
@@ -47,6 +61,10 @@ def get_power(config, method, topx, folder, iterations):
         power_df.to_csv(f'{folder}/power_cpmax_{topx}.txt', index=False, sep='\t')
     if method==2:
         power_df.to_csv(f'{folder}/power_PCs_cpmax_{topx}.txt', index=False, sep='\t')
+    if method==3:
+        power_df.to_csv(f'{folder}/power_PCs.txt', index=False, sep='\t')
+    if method==4:
+        power_df.to_csv(f'{folder}/power_PCs_kstest.txt', index=False, sep='\t')
 
 
 def main():

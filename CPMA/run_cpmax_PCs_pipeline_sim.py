@@ -12,6 +12,7 @@ def cpmax_pipeline(input_folder, scripts_folder, topx):
     if not os.path.isdir(PCs_folder):
         os.mkdir(PCs_folder)
     eqtl_file = f'{PCs_folder}/gene-snp-eqtl_PCs'
+    '''
     #Perform matrix eQTL to get gene-snp pairs
     #matrix_cmd = f'Rscript /storage/cynthiawu/trans_eQTL/Scripts/MatrixeQTL/gene-SNP_pairs.R -g {genotype} -e {expression} -o {eqtl_file}'.split(' ')
     matrix_cmd = f'Rscript {scripts_folder}/MatrixeQTL/gene-SNP_pairs.R -g {genotype} -e {expression} -o {eqtl_file}'.split(' ')
@@ -29,7 +30,9 @@ def cpmax_pipeline(input_folder, scripts_folder, topx):
     values_cmd = f'python {scripts_folder}/CPMA/get_values.py -i {eqtl_file} -n {num_genes} -p {pvalue_file} -z {zscore_file}'.split(' ')
     values = subprocess.Popen(values_cmd).wait()
     print(f'Finished getting pvalues and zscores, {input_folder}')
-
+    '''
+    pvalue_file = f'{eqtl_file}_pvalue'
+    
     #Calculate cpma values with matrix eqtl pvalues output
     cpma_file = f'{PCs_folder}/gene-snp-eqtl_PCs_cpma_topx_{topx}'
     #cpma_cmd = f'python /storage/cynthiawu/trans_eQTL/Scripts/CPMA/calculate_cpma_topx.py -i {pvalue_file} -x {topx} -o {cpma_file}'.split(' ')
