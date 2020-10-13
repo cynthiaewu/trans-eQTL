@@ -18,13 +18,13 @@ def generate_genotypes(sample_size, allele_freq, num_snps):
     return np.array(genotype)
 
 
-'''
+
 def get_noise(num_genes, cov, sample_size):
     return np.random.multivariate_normal(np.zeros(num_genes), cov, size=sample_size)
 
+
+
 '''
-
-
 # draw from normal dist for noise, when cov=identity
 #def get_noise(num_genes, noise_matrix, sample_size):
 def get_noise(num_genes, cov, sample_size):
@@ -35,6 +35,7 @@ def get_noise(num_genes, cov, sample_size):
     #for i in range(sample_size):
     #    noise.append(noise_matrix[choice])
     #return noise
+'''
 
 
 
@@ -65,7 +66,7 @@ def write_yfile(array, output):
     df.to_csv(f'{output}/expression.csv', index=True, header=True, sep='\t')
 
 
-def model(num_genes, allele_freq, sample_size, num_snps, beta_file, cov, output):
+def model(num_genes, allele_freq, sample_size, num_snps, beta_file, noise, output):
     
     beta = np.loadtxt(beta_file)
     #print(beta[0])
@@ -87,7 +88,10 @@ def model(num_genes, allele_freq, sample_size, num_snps, beta_file, cov, output)
     #print('finished computing summation of beta and genotype')
     #print('starting getting noise')
     
-    noise = get_noise(num_genes=num_genes, cov=cov, sample_size=sample_size)
+    
+    #noise = get_noise(num_genes=num_genes, cov=cov, sample_size=sample_size)
+    
+    
     #noise = get_noise(num_genes, sample_size)
     #print('finished getting noise')
     #print(np.array(noise).shape)
@@ -98,6 +102,22 @@ def model(num_genes, allele_freq, sample_size, num_snps, beta_file, cov, output)
     write_xfile(X, num_snps, output)
     write_yfile(Y, output)
     #print(f'Var: {np.var(Y)}')
+
+
+def create_gene_corr():
+    matrix = np.zeros((15000,15000))
+    matrix[0:100, 0:100] = 0.15
+    matrix[100:1000, 100:1000] = 0.5
+    matrix[1000:3000, 1000:3000] = -0.4
+    matrix[3000:7000, 3000:7000] = -0.2
+    matrix[7000:7800, 7000:7800] = 0.05
+    matrix[7800:8000, 7800:8000] = 0.65
+    matrix[8000:9000, 8000:9000] = 0.3
+    matrix[9000:10000, 9000:10000] = -0.15
+    matrix[10000:12000, 10000:12000] = 0.1
+    matrix[12000:12500, 12000:12500] = -0.3
+    np.fill_diagonal(matrix, 1)
+    return matrix
 
 
 def iter_model(config, seed, iterations, output):
@@ -114,10 +134,14 @@ def iter_model(config, seed, iterations, output):
     beta = params['beta']
     #noise_matrix = np.loadtxt(noise_file)
     if identity:
-        cov = np.identity(num_genes)
+        cov = create_gene_corr()
+        print('Running multivariate normal')
+        #cov = np.identity(num_genes)
         #cov_file = f'{output}cov.txt'
         #cov = np.loadtxt(cov_file)
         #print('Identiy covariance matrix created')
+        noise = get_noise(num_genes=num_genes, cov=cov, sample_size=sample_size*iterations)
+        print('Finished multivariate normal')
     sim_prefix = 'Simulation'
     for i in range(iterations):
         folder = f'{output}/{sim_prefix}_{i}/'
@@ -130,8 +154,9 @@ def iter_model(config, seed, iterations, output):
         if beta == 'value':
             beta_location = f'{output}/beta.txt'
 
+        noise_iter = noise[i*100:(i*100+100),]
         #model(num_genes, allele_freq, sample_size, num_snps,  f'{folder}/beta.txt', f'{folder}')
-        model(num_genes, allele_freq, sample_size, num_snps,  beta_location, cov, f'{folder}')
+        model(num_genes, allele_freq, sample_size, num_snps, beta_location, noise_iter, f'{folder}')
         print(f'Simulation {i}, folder {output}')
     print(f'Finished simulations for {output}')
 
