@@ -18,8 +18,16 @@ def generate_genotypes(sample_size, allele_freq, num_snps):
     return np.array(genotype)
 
 
+'''
+def get_noise(num_genes, cov, sample_size):
+    return np.random.multivariate_normal(np.zeros(num_genes), cov, size=sample_size)
+
+'''
+
+
+# draw from normal dist for noise, when cov=identity
 #def get_noise(num_genes, noise_matrix, sample_size):
-def get_noise(num_genes, sample_size):
+def get_noise(num_genes, cov, sample_size):
     return [np.random.normal(0, 1, num_genes) for i in range(sample_size)]
 
     #choice = random.randint(0, len(noise_matrix)-1)
@@ -27,6 +35,7 @@ def get_noise(num_genes, sample_size):
     #for i in range(sample_size):
     #    noise.append(noise_matrix[choice])
     #return noise
+
 
 
 def write_xfile(array, num_snps, output):
@@ -56,7 +65,7 @@ def write_yfile(array, output):
     df.to_csv(f'{output}/expression.csv', index=True, header=True, sep='\t')
 
 
-def model(num_genes, allele_freq, sample_size, num_snps, beta_file, output):
+def model(num_genes, allele_freq, sample_size, num_snps, beta_file, cov, output):
     
     beta = np.loadtxt(beta_file)
     #print(beta[0])
@@ -78,7 +87,8 @@ def model(num_genes, allele_freq, sample_size, num_snps, beta_file, output):
     #print('finished computing summation of beta and genotype')
     #print('starting getting noise')
     
-    noise = get_noise(num_genes, sample_size)
+    noise = get_noise(num_genes=num_genes, cov=cov, sample_size=sample_size)
+    #noise = get_noise(num_genes, sample_size)
     #print('finished getting noise')
     #print(np.array(noise).shape)
     Y = sum_X + np.array(noise).T
@@ -121,7 +131,7 @@ def iter_model(config, seed, iterations, output):
             beta_location = f'{output}/beta.txt'
 
         #model(num_genes, allele_freq, sample_size, num_snps,  f'{folder}/beta.txt', f'{folder}')
-        model(num_genes, allele_freq, sample_size, num_snps,  beta_location, f'{folder}')
+        model(num_genes, allele_freq, sample_size, num_snps,  beta_location, cov, f'{folder}')
         print(f'Simulation {i}, folder {output}')
     print(f'Finished simulations for {output}')
 
