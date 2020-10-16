@@ -107,14 +107,14 @@ def create_gene_corr():
     matrix = np.zeros((15000,15000))
     matrix[0:100, 0:100] = 0.15
     matrix[100:1000, 100:1000] = 0.5
-    matrix[1000:3000, 1000:3000] = -0.4
-    matrix[3000:7000, 3000:7000] = -0.2
+    matrix[1000:3000, 1000:3000] = 0.4
+    matrix[3000:7000, 3000:7000] = 0.2
     matrix[7000:7800, 7000:7800] = 0.05
     matrix[7800:8000, 7800:8000] = 0.65
     matrix[8000:9000, 8000:9000] = 0.3
-    matrix[9000:10000, 9000:10000] = -0.15
+    matrix[9000:10000, 9000:10000] = 0.15
     matrix[10000:12000, 10000:12000] = 0.1
-    matrix[12000:12500, 12000:12500] = -0.3
+    matrix[12000:12500, 12000:12500] = 0.3
     np.fill_diagonal(matrix, 1)
     return matrix
 
@@ -135,6 +135,8 @@ def iter_model(config, seed, iterations, output):
     if identity:
         cov = create_gene_corr()
         print('Running multivariate normal')
+       
+        #cov = np.loadtxt('/storage/cynthiawu/trans_eQTL/Scripts/genecorr_realdatacov')
         #cov = np.identity(num_genes)
         #cov_file = f'{output}cov.txt'
         #cov = np.loadtxt(cov_file)

@@ -70,7 +70,7 @@ def get_power(config, method, topx, folder, iterations):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", required=True, help="Input config file with parameters")
-    parser.add_argument("-m", "--method", type=int, required=True, help="0 for cpma, 1 for cpma_topx, or 2 for cpma_topx_PCs")
+    parser.add_argument("-m", "--method", type=int, required=True, help="0 for cpma, 1 for cpma_topx, or 2 for cpma_topx_PCs, 3 for top PC pvalue, 4 for ks test")
     parser.add_argument("-x", "--topx", default=0.1, type=float, help="Top x percent of genes to be used for cpma calculation")
     parser.add_argument("-f", "--folder", required=True, help="Folder with simulation folders which contains simulated data files")
     parser.add_argument("-i", "--iterations", type=int, required=True, help="# iterations to simulate genotype and expression files")
