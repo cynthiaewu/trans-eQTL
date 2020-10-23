@@ -6,15 +6,17 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
     #targets = [ 0, 20, 40, 60, 80, 100, 150, 200, 250, 300, 350, 400, 450, 500, 700, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000, 14000, 15000]
     #targets = [ 0, 5, 10, 15, 20, 30, 40, 60, 80, 100, 150, 200, 250, 300, 350, 400, 450, 500, 700, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000, 14000, 15000]
     #targets = [5, 10, 15, 30]
-    targets = [0, 5, 10, 15, 20, 30, 40, 60, 80, 100, 150, 200, 250, 300, 350, 400]
-    beta_values = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 1]
+    targets = [0, 5, 10, 15, 20, 30, 40, 60, 80, 100, 200, 300, 400, 700, 1000, 5000, 10000, 15000]
+    #targets = [10000]
+    beta_values = [0, 0.05, 0.1, 0.2, 0.3, 0.5, 1]
+    #beta_values = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 1]
     #beta_values = [0, 0.1, 1]
 
     targets_str = f'{targets}'.replace(' ', '').replace('[', '').replace(']', '')
     beta_values_str = f'{beta_values}'.replace(' ', '').replace('[', '').replace(']', '')
 
     
-    ''' 
+    
     metaconfig_cmd = f'python {scripts_folder}/Simulator/write_metaconfig.py -i {input_folder} -t {targets_str} -b {beta_values_str} -s {samplesize}'.split(' ')
     subprocess.call(metaconfig_cmd)
     print('Finished writing metaconfig files')
@@ -33,7 +35,8 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
             p.wait()
     print('Finished generating config files')
     
-
+    
+    '''
     print('Starting simulations')
     for tar in targets:
         simulate_cmd = []
@@ -44,19 +47,19 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
         for p in simulate_procs:
             p.wait()
     print('Finished simulating files')
+    '''
     
-
     print('Starting simulations')
     for tar in targets:
         simulate_cmd = []
         for beta in beta_values:
             value = str(beta).replace(".","")
-            simulate_cmd = f'python {scripts_folder}/Simulator/simulate_expression_givenoise.py -c {input_folder}/numTarget_{tar}/Beta_{value}/metaconfig.yaml -i 100 -o {input_folder}/numTarget_{tar}/Beta_{value}'.split(' ')
+            simulate_cmd = f'python {scripts_folder}/Simulator/simulate_expression_givenoise_test.py -c {input_folder}/numTarget_{tar}/Beta_{value}/metaconfig.yaml -i 100 -o {input_folder}/numTarget_{tar}/Beta_{value}'.split(' ')
             subprocess.call(simulate_cmd)
     print('Finished simulating files')
-    
-    print('Starting running cpma pipeline')
+  
     '''
+    print('Starting running cpma pipeline')    
     
     for tar in targets:
         cpma_cmd = []
@@ -67,8 +70,8 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
         for p in cpma_procs:
             p.wait()
     print('Finished calculating cpma') 
-     
-   
+    ''' 
+    ''' 
     print('Starting comparing to chi distribution')
     for tar in targets:
         chidist_cmd = []
@@ -79,7 +82,7 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
         for p in chidist_procs:
             p.wait()
     print('Finished comparing to chi distribution')
-   
+    
 
     print('Starting to calculate power')
     for tar in targets:
@@ -91,6 +94,7 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
         for p in power_procs:
             p.wait()
     print('Finished calculating power')
+    '''
 
 
 def main():

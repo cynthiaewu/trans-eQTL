@@ -18,7 +18,7 @@ def generate_identity(num_genes):
     return np.identity(num_genes)
 
 
-def generate_beta(num_genes, targets, beta_type, fixed_betas, rep):
+def generate_beta(num_genes, targets, num_nullsnps, beta_type, fixed_betas, rep):
     
     all_betas = []
     #t3 = time.time()
@@ -48,6 +48,8 @@ def generate_beta(num_genes, targets, beta_type, fixed_betas, rep):
                 for i in range(rep):
                     all_betas.append(beta)
 
+    for i in range(num_nullsnps):
+        all_betas.append((np.zeros(num_genes)))
     return all_betas
 
 
@@ -61,10 +63,10 @@ def generator(num_genes, num_targets, identity, num_snps, num_nullsnps, beta, be
         #t0 = time.time()
         #print(f'Cov matrix saved: {t0-t1}')
     if beta == 'sd':
-        beta = generate_beta(num_genes, num_targets, beta, beta_sd, rep)
+        beta = generate_beta(num_genes, num_targets,num_nullsnps,  beta, beta_sd, rep)
         np.savetxt(f'{output_path}/beta.txt', beta)
     if beta == 'value':
-        beta = generate_beta(num_genes, num_targets, beta, beta_value, rep)
+        beta = generate_beta(num_genes, num_targets, num_nullsnps, beta, beta_value, rep)
         np.savetxt(f'{output}/beta.txt', beta)
     #t6 = time.time()
 

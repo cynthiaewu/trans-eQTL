@@ -14,6 +14,8 @@ def get_pvalues_for_targets(result_file, method):
         return min(float(pvalues[0])*samplesize, 1)
     if method==4:
         return  stats.kstest((list(pvalues)), 'uniform')[1]
+    if method==5:
+        return float(results['mixture_pval'])
     else:
         return float(results['adj_pvalue'])
 
@@ -49,6 +51,8 @@ def get_power(config, method, topx, folder, iterations):
         # only matrix eqtl results on PC expression matrix
         if method==3 or method==4:
             result_file = f'{folder}/{sim_prefix}_{i}/expressionPCs/gene-snp-eqtl_PCs'
+        if method==5:
+            result_file = f'{folder}/{sim_prefix}_{i}/mixtureModel/gene-snp-eqtl_mixturepvalue'
         pvalues = get_pvalues_for_targets(result_file, method)
         all_pvalues.append(pvalues)
     power = calculate_power(all_pvalues, fdr_sig_threshold)
@@ -65,6 +69,8 @@ def get_power(config, method, topx, folder, iterations):
         power_df.to_csv(f'{folder}/power_PCs.txt', index=False, sep='\t')
     if method==4:
         power_df.to_csv(f'{folder}/power_PCs_kstest.txt', index=False, sep='\t')
+    if method==5:
+        power_df.to_csv(f'{folder}/power_mixtureModel.txt', index=False, sep='\t')
 
 
 def main():

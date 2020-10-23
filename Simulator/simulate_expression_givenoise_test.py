@@ -133,10 +133,10 @@ def iter_model(config, seed, iterations, output):
     beta = params['beta']
     #noise_matrix = np.loadtxt(noise_file)
     if identity:
-        cov = create_gene_corr()
+        #cov = create_gene_corr()
         print('Running multivariate normal')
        
-        #cov = np.loadtxt('/storage/cynthiawu/trans_eQTL/Scripts/genecorr_realdatacov')
+        cov = np.loadtxt('/storage/cynthiawu/trans_eQTL/Scripts/genecorr_realdatacov')
         #cov = np.identity(num_genes)
         #cov_file = f'{output}cov.txt'
         #cov = np.loadtxt(cov_file)
