@@ -13,7 +13,7 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
     targets_str = f'{targets}'.replace(' ', '').replace('[', '').replace(']', '')
     beta_values_str = f'{beta_values}'.replace(' ', '').replace('[', '').replace(']', '')
 
-    
+    '''
     metaconfig_cmd = f'python {scripts_folder}/Simulator/write_metaconfig.py -i {input_folder} -t {targets_str} -b {beta_values_str} -s {samplesize}'.split(' ')
     subprocess.call(metaconfig_cmd)
     print('Finished writing metaconfig files')
@@ -31,7 +31,7 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
             #print(p)
             p.wait()
     print('Finished generating config files')
-   
+    '''
 
     print('Starting simulations')
     for tar in targets:
