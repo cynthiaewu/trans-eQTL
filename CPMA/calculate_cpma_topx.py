@@ -46,7 +46,7 @@ def calculate_cpma_topx(input, x, output):
         #print(term1, term2, term3, term4)
         cpmax_value = 2*(term1 + term2 + term3 + term4)
         pvalue = 1 - scipy.stats.chi2.cdf(cpmax_value, 1)
-        print(cpmax_value, pvalue)
+        #print(cpmax_value, pvalue)
         if math.isnan(cpmax_value):
             cpmax_value = 0
         cpma.append(cpmax_value)

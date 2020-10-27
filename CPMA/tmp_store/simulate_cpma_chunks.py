@@ -6,7 +6,7 @@ import math
 
 
 def calculate_cpma(sim_pvalues, num_genes):
-    likelihood = np.mean(np.negative(np.log(sim_pvalues)))
+    likelihood = 1/(np.mean(np.negative(np.log(sim_pvalues))))
     value = -2 * ((((likelihood - 1) * num_genes)/likelihood) - num_genes*np.log(likelihood))
     return value
 

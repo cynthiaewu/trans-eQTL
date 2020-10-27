@@ -19,7 +19,7 @@ def cpmax_pipeline(input_folder, scripts_folder, topx):
     subprocess.call(matrix_cmd)
     print(f'Finished matrix eQTL, {input_folder}')
 
-    
+    '''
     #Obtain zscores and pvalues in a snp by gene matrix format from matrix eQTL output
     wc_cmd = f'wc -l {expression}'.split(' ')
     wc = subprocess.Popen(wc_cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -40,7 +40,7 @@ def cpmax_pipeline(input_folder, scripts_folder, topx):
     cpma_cmd = f'python {scripts_folder}/CPMA/calculate_cpma_topx.py -i {pvalue_file} -x {topx} -o {cpma_file}'.split(' ')
     cpma = subprocess.Popen(cpma_cmd).wait()
     print(f'Finished calculating cpma, {input_folder}')
-
+    '''
     '''
     #Calculate the gene covariance matrix and mean zscores for genes
     cov_matrix = f'{eqtl_file}_cov'

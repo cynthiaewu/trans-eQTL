@@ -29,9 +29,7 @@ def cpmax_pipeline(input_folder, scripts_folder, topx):
     num_genes = int(stdout.split()[0])-1
     
 
-    pvalue_file = f'{eqtl_file}_pvalue'
-    
-    
+    pvalue_file = f'{eqtl_file}_pvalue'    
     zscore_file = f'{eqtl_file}_zscore'
     
     
@@ -39,8 +37,6 @@ def cpmax_pipeline(input_folder, scripts_folder, topx):
     values_cmd = f'python {scripts_folder}/CPMA/get_values.py -i {eqtl_file} -n {num_genes} -p {pvalue_file} -z {zscore_file}'.split(' ')
     values = subprocess.Popen(values_cmd).wait()
     print(f'Finished getting pvalues and zscores, {input_folder}')
-    
-
     
     #Calculate cpma values with matrix eqtl pvalues output
     cpma_file = f'{cpmax_folder}/gene-snp-eqtl_cpma_topx_{topx}'
@@ -50,34 +46,19 @@ def cpmax_pipeline(input_folder, scripts_folder, topx):
     cpma = subprocess.Popen(cpma_cmd).wait()
     print(f'Finished calculating cpma, {input_folder}')
     
-    
     #Calculate the gene covariance matrix and mean zscores for genes
-    cov_matrix = f'{eqtl_file}_cov'
     mzscores = f'{eqtl_file}_meanzscores'
-    cov_cmd = f'python {scripts_folder}/CPMA/calculate_cov_meanzscores.py -i {zscore_file} -c {cov_matrix} -m {mzscores}'.split(' ')
-    cov = subprocess.Popen(cov_cmd).wait()
-    print('Finished calculating cov matrix and mean zscores')
-
-    #Calculate the eigendecomposition
-    evalues_file = f'{eqtl_file}_evalues'
-    evectors_file = f'{eqtl_file}_Q'
-    eigen_cmd = f'python {scripts_folder}/CPMA/calculate_edecomposition.py -c {cov_matrix} -e {evalues_file} -q {evectors_file}'.split(' ')
-    eigen = subprocess.Popen(eigen_cmd).wait()
-    print('Finished calculating eigendecomposition')
-
-    #Simulate cpma values from normal distribution with gene covariance matrix and mean zscores
-    num_sim = 100000
     sim_file = f'{eqtl_file}_sim{num_sim}_cpma'
-    simulate_cmd = f'python {scripts_folder}/CPMA/simulate_cpma_chunks.py -z {mzscores} -e {evalues_file} -q {evectors_file} -o {sim_file} -n {num_sim}'.split(' ')
-    simulate = subprocess.Popen(simulate_cmd).wait()
-    print('Finished simulation of cpma values')
+    num_sim = 100000
+    decomp_sim_cmd = f'python {scripts_folder}/CPMA/perform_cpma_decomposition_sim.py -i {zscore_file} -o {sim_file} -n {num_sim}'.split(' ')
+    decomp_sim = subprocess.Popen(decomp_sim_cmd).wait()
+    print('Finished calculating cov matrix, eigendecomposition, simulating cpma values')
 
     #Compare simulated cpma with observed cpma to get an empirical pvalue for each snp
     empirical_file = f'{eqtl_file}_empiricalpvalues_topx_{topx}'
     compare_cmd = f'python {scripts_folder}/CPMA/calculate_empirical_pvalue.py -s {sim_file} -o {cpma_file} -e {empirical_file}'.split(' ')
     compare = subprocess.Popen(compare_cmd).wait()
     print('Finished calculating empirical pvalues from cpma')
-    
 
 
 def iterate_folders(folder, scripts_folder, topx, iterations):
