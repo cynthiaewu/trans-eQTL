@@ -16,7 +16,7 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
     beta_values_str = f'{beta_values}'.replace(' ', '').replace('[', '').replace(']', '')
 
     
-    
+    '''
     metaconfig_cmd = f'python {scripts_folder}/Simulator/write_metaconfig.py -i {input_folder} -t {targets_str} -b {beta_values_str} -s {samplesize}'.split(' ')
     subprocess.call(metaconfig_cmd)
     print('Finished writing metaconfig files')
@@ -34,7 +34,7 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
             #print(p)
             p.wait()
     print('Finished generating config files')
-    
+    '''
     
     '''
     print('Starting simulations')
@@ -48,7 +48,7 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
             p.wait()
     print('Finished simulating files')
     '''
-    
+    '''
     print('Starting simulations')
     for tar in targets:
         simulate_cmd = []
@@ -70,7 +70,7 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
         for p in cpma_procs:
             p.wait()
     print('Finished calculating cpma') 
-    ''' 
+    
     ''' 
     print('Starting comparing to chi distribution')
     for tar in targets:
