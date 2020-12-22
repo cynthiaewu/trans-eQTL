@@ -19,7 +19,7 @@ def get_pvalues_for_targets(result_file, method):
     if method==6:
         return float(results['mixture_cpmax_pval'])
     if method==7:
-        return float(results['gamma_pval'])
+        return float(results['empirical_pvalue'])
     else:
         return float(results['adj_pvalue'])
 
@@ -60,7 +60,7 @@ def get_power(config, method, topx, folder, iterations):
         if method==6:
             result_file = f'{folder}/{sim_prefix}_{i}/mixtureModel_cpmax/gene-snp-eqtl_mixture_cpmax_pvalue'
         if method==7:
-            result_file = f'{folder}/{sim_prefix}_{i}/gammaModel/gene-snp-eqtl_gammapvalue'
+            result_file = f'{folder}/{sim_prefix}_{i}/gammaModel/gene-snp-eqtl_gammateststat'
         pvalues = get_pvalues_for_targets(result_file, method)
         all_pvalues.append(pvalues)
     power = calculate_power(all_pvalues, fdr_sig_threshold)
@@ -82,7 +82,7 @@ def get_power(config, method, topx, folder, iterations):
     if method==6:
         power_df.to_csv(f'{folder}/power_mixtureModel_cpmax.txt', index=False, sep='\t')
     if method==7:
-        power_df.to_csv(f'{folder}/power_gamma.txt', index=False, sep='\t')
+        power_df.to_csv(f'{folder}/power_gamma_adjusted.txt', index=False, sep='\t')
 
 
 def main():

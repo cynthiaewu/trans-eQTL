@@ -21,14 +21,8 @@ def generate_identity(num_genes):
 def generate_beta(num_genes, targets, num_nullsnps, beta_type, fixed_betas, rep):
     
     all_betas = []
-    #t3 = time.time()
-    #print(f'Beta zeros created: {t3-t2}')
-    
-    #targets = np.random.normal(0, 0.1, num_targets)
-    #targets = [20, 40, 50, 60, 80, 100, 150, 200]
-    #targets = [400, 600, 800, 1000, 1250, 1500, 1750, 2000]
-    #targets = [250, 300, 350]
-    #fixed_betas = [0.1, 0.2, 0.3, 0.4, 0.5]
+
+    # simulate beta values drawn from normal distribution given standard deviation as input
     if beta_type == 'sd':
         for num_t in targets:
             for beta_sd in fixed_betas: 
@@ -38,6 +32,7 @@ def generate_beta(num_genes, targets, num_nullsnps, beta_type, fixed_betas, rep)
             # iterations
                 for i in range(rep):
                     all_betas.append(beta)
+    # simulate same fixed beta values for all target genes given beta value as input 
     if beta_type == 'value':
         for num_t in targets:
             for beta_value in fixed_betas: 
@@ -54,21 +49,15 @@ def generate_beta(num_genes, targets, num_nullsnps, beta_type, fixed_betas, rep)
 
 
 def generator(num_genes, num_targets, identity, num_snps, num_nullsnps, beta, beta_sd, beta_value, output_path, output, rep):
-    #t0 = time.time()
     if not identity:
         cov_matrix = generate_cov(num_genes)
         np.savetxt(f'{output}/cov.txt', cov_matrix)
-        #t1 = time.time()
-        #print(f'Cov matrix created: {t1-t0}')
-        #t0 = time.time()
-        #print(f'Cov matrix saved: {t0-t1}')
     if beta == 'sd':
         beta = generate_beta(num_genes, num_targets,num_nullsnps,  beta, beta_sd, rep)
         np.savetxt(f'{output_path}/beta.txt', beta)
     if beta == 'value':
         beta = generate_beta(num_genes, num_targets, num_nullsnps, beta, beta_value, rep)
         np.savetxt(f'{output}/beta.txt', beta)
-    #t6 = time.time()
 
 
 def iter_generator(config, seed, iterations, output):
@@ -85,6 +74,9 @@ def iter_generator(config, seed, iterations, output):
     beta_sd = params['beta_sd']
     beta_value = params['beta_value']
     rep = params['rep']
+    # don't actually have to create and save identity cov matrix, can just call numpy to create a identity matrix during calculations
+    # faster than reading and writing the files for identity cov matrix
+
     #if identity:
     #    cov_matrix = generate_identity(num_genes)
     #    np.savetxt(f'{output}/cov.txt', cov_matrix)
@@ -103,8 +95,6 @@ def iter_generator(config, seed, iterations, output):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", required=True, help="Input config file with parameters")
-    #parser.add_argument("-g", "--genes", type=int, required=True, help="Number genes")
-    #parser.add_argument("-t", "--num_targets", type=int, required=True, help="Number target genes for the trans-eqtl")
     parser.add_argument("-s", "--seed", type=int, default=0, help="Seed for random generator")
     parser.add_argument("-i", "--iterations", type=int, default=0, help="# iterations for generating cov matrix and beta files")
     parser.add_argument("-o", "--output", required=True, help="Output folder with simulated files")

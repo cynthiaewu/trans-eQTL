@@ -12,48 +12,20 @@ def generate_genotypes(sample_size, allele_freq, num_snps):
         allele1 = bernoulli.rvs(allele_freq, size=sample_size)
         allele2 = bernoulli.rvs(allele_freq, size=sample_size)
         genotype.append(allele1 + allele2)
-        #if i % 500 == 0:
-         #   print(i)
     return np.array(genotype)
-
 
 
 def get_noise(num_genes, cov, sample_size):
     return np.random.multivariate_normal(np.zeros(num_genes), cov, size=sample_size)
 
 
-
-'''
-# draw from normal dist for noise, when cov=identity
-#def get_noise(num_genes, noise_matrix, sample_size):
-def get_noise(num_genes, cov, sample_size):
-    return [np.random.normal(0, 1, num_genes) for i in range(sample_size)]
-
-    #choice = random.randint(0, len(noise_matrix)-1)
-    #noise = []
-    #for i in range(sample_size):
-    #    noise.append(noise_matrix[choice])
-    #return noise
-'''
-
-
-
 def write_xfile(array, num_snps, output):
     if num_snps == 1:
         array = array.reshape(1, -1)
-    # try:
-    # shape = array.shape
-    # except IndexError:
-    #     shape = (array.shape[0], 1)
-    #print(shape)
+    
     sample_size = array.shape[1]
     col = ['Sample' + str(i) for i in range(sample_size)]
     row = ['SNP' + str(i) for i in range(num_snps)]
-    #print(col)
-    #print(array)
-    # if num_snps == 1:
-    #     df = pd.DataFrame(array.reshape(1, -1), index=row, columns=col)
-    # else:
     df = pd.DataFrame(array, index=row, columns=col)
     df.to_csv(f'{output}/genotype.csv', index=True, header=True, sep='\t')
 
@@ -68,22 +40,15 @@ def write_yfile(array, output):
 def model(num_genes, allele_freq, sample_size, num_snps, beta_file, noise, output):
     
     beta = np.loadtxt(beta_file)
-    #print(beta[0])
     if num_snps == 1:
         beta = beta.reshape(1, -1)
     #print('starting generating genotypes')
     X = generate_genotypes(sample_size=sample_size, allele_freq=allele_freq, num_snps=num_snps)
     #print('finished generating genotypes')
-   #print(X)
     sum_X = 0
     #print('started computing summation of beta and genotype')
     for i in range(num_snps):
         sum_X += (np.outer(beta[i], X[i]))
-        #if i % 500 == 0:
-        #    print(i)
-        #print(beta[i])
-        #print(sum_X)
-    #print(sum_X.shape)
     #print('finished computing summation of beta and genotype')
     #print('starting getting noise')
     
@@ -96,13 +61,13 @@ def model(num_genes, allele_freq, sample_size, num_snps, beta_file, noise, outpu
     #print(np.array(noise).shape)
     Y = sum_X + np.array(noise).T
     #print('finished computing expression')
-    #print(X.shape)
     #Y = np.outer(beta, X)  + np.array(noise).T
     write_xfile(X, num_snps, output)
     write_yfile(Y, output)
-    #print(f'Var: {np.var(Y)}')
 
 
+'''
+# example gene correlation matrix when cov != identity
 def create_gene_corr():
     matrix = np.zeros((15000,15000))
     matrix[0:100, 0:100] = 0.15
@@ -117,6 +82,7 @@ def create_gene_corr():
     matrix[12000:12500, 12000:12500] = -0.3
     np.fill_diagonal(matrix, 1)
     return matrix
+'''
 
 
 def iter_model(config, seed, iterations, output):
@@ -133,27 +99,32 @@ def iter_model(config, seed, iterations, output):
     beta = params['beta']
     #noise_matrix = np.loadtxt(noise_file)
     if identity:
-        cov = create_gene_corr()
-        print('Running multivariate normal')
-        #cov = np.identity(num_genes)
+        #cov = create_gene_corr()
+        #print('Running multivariate normal')
+        cov = np.identity(num_genes)
         #cov_file = f'{output}cov.txt'
         #cov = np.loadtxt(cov_file)
         #print('Identiy covariance matrix created')
-        noise = get_noise(num_genes=num_genes, cov=cov, sample_size=sample_size*iterations)
-        print('Finished multivariate normal')
+
+        # simulate all noise for all iterations at once (numpy multivariate normal only has to run SD once)
+        # Can run into memory error for large sample sizes (samplesize=500)
+        #noise = get_noise(num_genes=num_genes, cov=cov, sample_size=sample_size*iterations)
+        #print('Finished multivariate normal')
     sim_prefix = 'Simulation'
     for i in range(iterations):
         folder = f'{output}/{sim_prefix}_{i}/'
         if not identity:
             cov_file = f'{folder}cov.txt'
             cov = np.loadtxt(cov_file)
-        #print(f'{output}/beta.txt')
         if beta == 'sd':
             beta_location = f'{folder}/beta.txt'
         if beta == 'value':
             beta_location = f'{output}/beta.txt'
 
-        noise_iter = noise[i*100:(i*100+100),]
+        print('Running multivariate normal')
+        noise_iter = get_noise(num_genes=num_genes, cov=cov, sample_size=sample_size)
+        print('Finished multivariate normal')
+        #noise_iter = noise[i*sample_size:(i*sample_size+sample_size),]
         #model(num_genes, allele_freq, sample_size, num_snps,  f'{folder}/beta.txt', f'{folder}')
         model(num_genes, allele_freq, sample_size, num_snps, beta_location, noise_iter, f'{folder}')
         print(f'Simulation {i}, folder {output}')
