@@ -12,18 +12,18 @@ do
     do
         # CPMA
         echo $targets $beta
-        cat ${RESDIR}/SampleSize${SSIZE}/SingleParameter/numTarget_${targets}/Beta_${beta}/Simulation_*/CPMAx/gene-snp-eqtl_cpmax_pvalues_1.0 | \
-            grep SNP0 | cut -f 4 > ${OUTDIR}/CPMA_${SSIZE}_${targets}_${beta}.pvals
+#        cat ${RESDIR}/SampleSize${SSIZE}/SingleParameter/numTarget_${targets}/Beta_${beta}/Simulation_*/CPMAx/gene-snp-eqtl_cpmax_pvalues_1.0 | \
+#            grep SNP0 | cut -f 4 > ${OUTDIR}/CPMA_${SSIZE}_${targets}_${beta}.pvals
         
         # Mixture model
         cat ${RESDIR}/SampleSize${SSIZE}/SingleParameter/numTarget_${targets}/Beta_${beta}/Simulation_*/mixtureModel/gene-snp-eqtl_mixturepvalue | \
-            grep SNP0 | cut -f 4 > ${OUTDIR}/Mixture_${SSIZE}_${targets}_${beta}.pvals
+            grep SNP0 | cut -f 2 > ${OUTDIR}/Mixture_${SSIZE}_${targets}_${beta}.pvals
         
         # Pairwise
-        for f in $(ls ${RESDIR}/SampleSize${SSIZE}/SingleParameter/numTarget_${targets}/Beta_${beta}/Simulation_*/CPMA/gene-snp-eqtl)
-	do 
-	    cat $f | grep -v gene | datamash min 5
-	done > ${OUTDIR}/Pairwise_${SSIZE}_${targets}_${beta}.pvals
+#        for f in $(ls ${RESDIR}/SampleSize${SSIZE}/SingleParameter/numTarget_${targets}/Beta_${beta}/Simulation_*/CPMA/gene-snp-eqtl)
+#	do 
+#	    cat $f | grep -v gene | datamash min 5
+#	done > ${OUTDIR}/Pairwise_${SSIZE}_${targets}_${beta}.pvals
 
     done
 done
