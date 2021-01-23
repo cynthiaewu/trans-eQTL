@@ -33,7 +33,7 @@ def calculate_power(all_pvalues, sig_threshold):
     return power
 
 
-def get_power(config, method, topx, folder, iterations):
+def get_power(config, method, topx, folder, iterations, num_snps_real):
     with open(config) as f:
         params = yaml.load(f)
         print(params)
@@ -41,7 +41,9 @@ def get_power(config, method, topx, folder, iterations):
     num_targets = params['num_targets']
     beta_value = params['beta_value']
     sig_threshold = params['sig_threshold']
-    fdr_sig_threshold = sig_threshold/num_snps
+    #fdr_sig_threshold = sig_threshold/num_snps
+    # iterations = num_snps when combining all simulations
+    fdr_sig_threshold = sig_threshold/num_snps_real
     sim_prefix = 'Simulation'
     all_pvalues = []
     for i in range(iterations):
@@ -66,11 +68,11 @@ def get_power(config, method, topx, folder, iterations):
     power = calculate_power(all_pvalues, fdr_sig_threshold)
     calculated = [[num_targets[0], beta_value[0], power]]
     print(f'calculated, {folder}')
-    power_df = pd.DataFrame(calculated, columns=['#target_genes', 'beta_value', 'power'])
+    power_df = pd.DataFrame(calculated, columns=['#target_genes', 'beta_value', 'power_adjusted'])
     if method==0:
-        power_df.to_csv(f'{folder}/power_fixed.txt', index=False, sep='\t')
+        power_df.to_csv(f'{folder}/power_cpma_adjusted_realnumsnps.txt', index=False, sep='\t')
     if method==1:
-        power_df.to_csv(f'{folder}/power_cpmax_{topx}.txt', index=False, sep='\t')
+        power_df.to_csv(f'{folder}/power_cpmax_{topx}_adjusted_realnumsnps.txt', index=False, sep='\t')
     if method==2:
         power_df.to_csv(f'{folder}/power_PCs_cpmax_{topx}.txt', index=False, sep='\t')
     if method==3:
@@ -78,7 +80,7 @@ def get_power(config, method, topx, folder, iterations):
     if method==4:
         power_df.to_csv(f'{folder}/power_PCs_kstest.txt', index=False, sep='\t')
     if method==5:
-        power_df.to_csv(f'{folder}/power_mixtureModel.txt', index=False, sep='\t')
+        power_df.to_csv(f'{folder}/power_mixtureModel_adjusted_realnumsnps.txt', index=False, sep='\t')
     if method==6:
         power_df.to_csv(f'{folder}/power_mixtureModel_cpmax.txt', index=False, sep='\t')
     if method==7:
@@ -90,6 +92,7 @@ def main():
     parser.add_argument("-c", "--config", required=True, help="Input config file with parameters")
     parser.add_argument("-m", "--method", type=int, required=True, help="0 for cpma, 1 for cpma_topx, or 2 for cpma_topx_PCs, 3 for top PC pvalue, 4 for ks test")
     parser.add_argument("-x", "--topx", default=0.1, type=float, help="Top x percent of genes to be used for cpma calculation")
+    parser.add_argument("-n", "--num_snps_real", default=10000, type=int, help="# snps to use for multiple hypothesis correction (based on real data)")
     parser.add_argument("-f", "--folder", required=True, help="Folder with simulation folders which contains simulated data files")
     parser.add_argument("-i", "--iterations", type=int, required=True, help="# iterations to simulate genotype and expression files")
     #parser.add_argument("-o", "--output", required=True, help="Output folder to write power analysis files")
@@ -98,6 +101,7 @@ def main():
     get_power(config=params.config,
           method=params.method,
           topx=params.topx,
+          num_snps_real=params.num_snps_real,
           folder=params.folder,
           iterations=params.iterations)
          # output=params.output)

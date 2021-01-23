@@ -14,7 +14,7 @@ def calculate_cpma(sim_pvalues, num_genes):
 def simulateZscores(zfile, efile, qfile, output, n):
     #mean_zscores = np.loadtxt('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_meanzscores.csv', dtype=complex, delimiter='\t')
     mean_zscores = np.loadtxt(zfile, delimiter='\t')
-    print('mean zscores file read')
+    print(f'mean zscores file read {zfile}')
     #print(mean_zscores.shape)
 
     #e_values = np.loadtxt('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_evalues.csv', dtype=complex, delimiter='\t')
@@ -22,31 +22,33 @@ def simulateZscores(zfile, efile, qfile, output, n):
     e_values = (np.loadtxt(efile, delimiter='\t'))
     n_genes = len(e_values)
     print(n_genes)
-    print('e_values file read')
+    print(f'e_values file read {efile}')
     #Q = np.loadtxt('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_Q.csv', dtype=complex, delimiter='\t')
     #Q = (np.loadtxt(qfile, dtype=complex, delimiter='\t')).real
     Q = (np.loadtxt(qfile, delimiter='\t'))
-    print('Q file read')
+    print(f'Q file read {qfile}')
     diag_e_values = np.diag(e_values)
     E = np.sqrt(diag_e_values)
     #print(E)
     
-    print('starting simulations')
+    print(f'starting simulations {zfile}')
     #print(Q.shape)
     #print(E.shape)
     e_matrix = np.dot(Q, E)
+    Q = ''
+    E = ''
    
     sim_cpma = []
     #iterations = math.ceil(n/30000)
-    iterations = math.ceil(n/100000)
+    iterations = math.ceil(n/30000)
     #print(iterations)
     sim_undone = n
     #perform in chunks of 1000
     for i in range(iterations):
         #cur_n = min(30000, sim_undone)
-        cur_n = min(100000, sim_undone)
+        cur_n = min(30000, sim_undone)
         sim_undone = sim_undone - cur_n
-        print(n-sim_undone)
+        print(f'{n-sim_undone} {zfile}')
 
         z=np.random.normal(0, 1, (n_genes, cur_n))
         #print(z.shape)
@@ -61,7 +63,7 @@ def simulateZscores(zfile, efile, qfile, output, n):
             cpma = calculate_cpma(sim, n_genes)
             sim_cpma.append(cpma)
 
-    print('simulated cpma calculated')
+    print(f'simulated cpma calculated {zfile}')
 
     sim_cpma = np.array(sim_cpma)
    # np.savetxt('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_simzscores100.csv', sim_zscores, delimiter='\t')
