@@ -48,8 +48,8 @@ def cpmax_pipeline(input_folder, scripts_folder, topx):
     
     #Calculate the gene covariance matrix and mean zscores for genes
     mzscores = f'{eqtl_file}_meanzscores'
-    sim_file = f'{eqtl_file}_sim{num_sim}_cpma'
     num_sim = 100000
+    sim_file = f'{eqtl_file}_sim{num_sim}_cpma'
     decomp_sim_cmd = f'python {scripts_folder}/CPMA/perform_cpma_decomposition_sim.py -i {zscore_file} -o {sim_file} -n {num_sim}'.split(' ')
     decomp_sim = subprocess.Popen(decomp_sim_cmd).wait()
     print('Finished calculating cov matrix, eigendecomposition, simulating cpma values')
