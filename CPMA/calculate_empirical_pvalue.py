@@ -16,6 +16,7 @@ def calculate_empirical(sim_file, obs_file, output):
     obs_cpma.insert(2, "pvalue", pvalue)
     
     obs_cpma.to_csv(output, index=False, header=True, sep='\t')
+    print(f'Finished calculating empirical pvalues for {obs_file}')
 
 def main():
     parser = argparse.ArgumentParser()

@@ -4,6 +4,7 @@ import argparse
 
 
 def getCov(input, cov_out, m_out):
+    print(f'Reading datafile {input}')
     data = pd.read_csv(input, sep='\t', index_col=0)
     genes = list(data.columns)
     scores = np.transpose(np.array(data))

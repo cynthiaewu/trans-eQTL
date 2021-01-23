@@ -4,9 +4,9 @@ For CPMA method, run_simulate_cpma_pipeline.py Input folder is where all the sim
  ```
  python run_simulate_cpma_pipeline.py -i input_folder -p scripts_folder -s samplesize
  ```
- For CPMA_x method, **NOT FINISHED**
+ For CPMA_x method, 
  ```
- run_simulate_cpma_topx_pipeline.py
+ run_simulate_cpma_topx_pipeline.py -i input_folder -p scripts_folder -s samplesize -x topx
  ```
 # Simulator
 1. Generate metaconfig yaml file to be used for simulations. Input folder must contain the numTarget_x and Beta_x folders. Need to manually edit the parameters desired for simulations in this script. 
@@ -22,7 +22,7 @@ For CPMA method, run_simulate_cpma_pipeline.py Input folder is where all the sim
 - The parameter identity is set to be True for using the identity matrix to simulate the noise matrix used for simulations or False if a gene covariance matrix is given to simulate the noise matrix. 
 - The parameter rep is used for "manysiminone" simulations where one simulation contains multiple eqtls with different parameters. 
 - The parameter sig_threshold is used to set the significance for calculating the power of the eqtl methods. 
-**NEED MORE WORK**
+
    ```
    python write_metaconfig.py -i input_folder -s samplesize
    ```
@@ -31,16 +31,12 @@ For CPMA method, run_simulate_cpma_pipeline.py Input folder is where all the sim
 
    Iterations are the number of desired simulations. A folder will be created for each iteration/simulation and will contain "beta.txt" which contains the beta effect sizes each snp has on each gene and also a "cov.txt" file if the covariance/gene_correlation file is not the identity matrix.
    ```
-   python config_generator.py -c metaconfig_yaml_file -i iterations -o output_folder
+   python config_generator_specific.py -c metaconfig_yaml_file -i iterations -o output_folder
    ```
 
-   Used for cpma method to have a simulation file with all trans-eQTLs with varying #target genes in one simulation file. The 'num_targets' in the meta_config_yaml file contains a list of #target genes to test and the 'beta_value' contains a list of the beta values to test. 100 iterations (to create necessary config files) for each pair of #target genes and beta value will be performed. 
-   ```
-   config_generator_specific.py -c metaconfig_yaml_file -i iterations -o output_folder
-   ```
 3. Simulate genotype and expression files given that config generator has already been run to generate necessary config files. The metaconfig_yaml_file, iterations, and output_folder should be the same as (1.)
    ```
-   python simulate_expression.py -c metaconfig_yaml_file -i iterations -o output_folder
+   python simulate_expression_givenoise.py -c metaconfig_yaml_file -i iterations -o output_folder
    ```
 4. Run eQTL methods with the simulated genotype and expression files.
 5. Calculate power of the results from the eQTL methods.
@@ -59,12 +55,16 @@ For CPMA method, run_simulate_cpma_pipeline.py Input folder is where all the sim
    ```
    python compute_pvalue_chidist.py -i input_file -c cpma_type -n num_test -o output_file
    ```
-   Input file of 'calculate_power_manysiminone_cpma.py' should be the output file from 'compute_pvalue_chidist.py' The script is for calculating power for many simulations done in a single file. 
-   ```
-   python calculate_power_manysiminone_cpma.py -c metaconfig_yaml_file -i input_file -o output_folder
-   ```
 
    calculate_power_singleqtl_cpma.py is for simulations that contain a single eqtl per simulation (no null snp or other eqtl is simulated in the same file). For cpma_type parameter, 0 is for cpma, 1 is for cpmax. 
    ```
    python calculate_power_singleqtl_cpma.py -c metaconfig_yaml_file -t cpma_type -f input_folder -i iterations
    ```
+   
+   Input file of 'calculate_power_manysiminone_cpma.py' should be the output file from 'compute_pvalue_chidist.py' The script is for calculating power for many simulations done in a single file. 
+   ```
+   python calculate_power_manysiminone_cpma.py -c metaconfig_yaml_file -i input_file -o output_folder
+   ```
+
+**Plotting of Power of eQTL methods**
+https://github.com/cynthiaewu/trans-eQTL/blob/master/Jupyter/Power%20vs%20Betas.ipynb

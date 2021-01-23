@@ -3,15 +3,19 @@ import argparse
 
 
 def mixture_pipeline(input_folder, scripts_folder):
-    targets = [ 0, 20, 40, 60, 80, 100, 150, 200, 250, 300, 350, 400, 450, 500, 700, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000, 14000, 15000]
+    #targets = [ 0, 5, 10, 15, 20, 30, 40, 60, 80, 100, 150, 200, 250, 300, 350, 400, 450, 500, 700, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000, 14000, 15000]
     beta_values = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 1]
+    #beta_values = [ 0.01, 0.02, 0.03, 0.04, 0.4]
+    #beta_values = [0, 0.01, 0.1, 1]
 
     #targets = [0, 5, 10, 15, 20, 30, 40, 60, 80, 100, 200, 300, 400, 700, 1000, 5000, 10000, 15000]
+    targets = [5, 10, 15, 30]
+    #targets = [10, 100, 1000]
     #beta_values = [0, 0.05, 0.1, 0.2, 0.3, 0.5, 1]
      
     print('Starting running mixture pipeline')
 
-    '''
+    
     for tar in targets:
         mixture_cmd = []
         for beta in beta_values:
@@ -21,7 +25,7 @@ def mixture_pipeline(input_folder, scripts_folder):
         for p in mixture_procs:
             p.wait()
     print('Finished calculating mixture') 
-    '''
+    
     
     print('Starting to calculate power')
     for tar in targets:
