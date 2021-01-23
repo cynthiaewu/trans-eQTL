@@ -14,6 +14,8 @@ def get_pvalues_for_targets(result_file, method):
         return min(float(pvalues[0])*samplesize, 1)
     if method==4:
         return  stats.kstest((list(pvalues)), 'uniform')[1]
+    if method==5:
+        return float(results['mixture_pval'])
     else:
         return float(results['adj_pvalue'])
 
@@ -49,6 +51,8 @@ def get_power(config, method, topx, folder, iterations):
         # only matrix eqtl results on PC expression matrix
         if method==3 or method==4:
             result_file = f'{folder}/{sim_prefix}_{i}/expressionPCs/gene-snp-eqtl_PCs'
+        if method==5:
+            result_file = f'{folder}/{sim_prefix}_{i}/mixtureModel/gene-snp-eqtl_mixturepvalue'
         pvalues = get_pvalues_for_targets(result_file, method)
         all_pvalues.append(pvalues)
     power = calculate_power(all_pvalues, fdr_sig_threshold)
@@ -65,12 +69,14 @@ def get_power(config, method, topx, folder, iterations):
         power_df.to_csv(f'{folder}/power_PCs.txt', index=False, sep='\t')
     if method==4:
         power_df.to_csv(f'{folder}/power_PCs_kstest.txt', index=False, sep='\t')
+    if method==5:
+        power_df.to_csv(f'{folder}/power_mixtureModel.txt', index=False, sep='\t')
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", required=True, help="Input config file with parameters")
-    parser.add_argument("-m", "--method", type=int, required=True, help="0 for cpma, 1 for cpma_topx, or 2 for cpma_topx_PCs")
+    parser.add_argument("-m", "--method", type=int, required=True, help="0 for cpma, 1 for cpma_topx, or 2 for cpma_topx_PCs, 3 for top PC pvalue, 4 for ks test")
     parser.add_argument("-x", "--topx", default=0.1, type=float, help="Top x percent of genes to be used for cpma calculation")
     parser.add_argument("-f", "--folder", required=True, help="Folder with simulation folders which contains simulated data files")
     parser.add_argument("-i", "--iterations", type=int, required=True, help="# iterations to simulate genotype and expression files")

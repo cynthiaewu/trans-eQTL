@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import random
 import yaml
 from scipy.stats import bernoulli
 #from scipy.stats import multivariate_normal
@@ -121,7 +120,7 @@ def create_gene_corr():
 
 
 def iter_model(config, seed, iterations, output):
-    #print(f'Seed = {seed}')
+    print(f'Seed = {seed}')
     np.random.seed(seed)
     with open(config) as f:
         params = yaml.load(f)
