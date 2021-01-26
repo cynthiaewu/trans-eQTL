@@ -8,10 +8,10 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
     #targets = [5, 10, 15, 30]
     #targets = [0, 5, 10, 15, 20, 30, 40, 60, 80, 100, 200, 300, 400, 700, 1000, 5000, 10000, 15000]
     #targets = [1, 10, 100, 1000]
-    targets = [100]
+    targets = [10, 100, 1000]
     #targets = [10000]
     #beta_values = [0, 0.05, 0.1, 0.2, 0.3, 0.5, 1]
-    beta_values = [0, 0.01, 0.05, 0.1, 1]
+    #beta_values = [0, 0.01, 0.1, 1]
     beta_values = [0.05]
     #beta_values = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 1]
     #beta_values = [0, 0.1, 1]
@@ -20,7 +20,7 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
     beta_values_str = f'{beta_values}'.replace(' ', '').replace('[', '').replace(']', '')
 
     
-    '''
+    
     metaconfig_cmd = f'python {scripts_folder}/Simulator/write_metaconfig.py -i {input_folder} -t {targets_str} -b {beta_values_str} -s {samplesize}'.split(' ')
     subprocess.call(metaconfig_cmd)
     print('Finished writing metaconfig files')
@@ -38,7 +38,7 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
             #print(p)
             p.wait()
     print('Finished generating config files')
-    '''
+    
     
     
     print('Starting simulations')

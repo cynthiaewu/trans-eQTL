@@ -112,7 +112,7 @@ def iter_model(config, seed, iterations, output):
         #noise = get_noise(num_genes=num_genes, cov=cov, sample_size=sample_size*iterations)
         #print('Finished multivariate normal')
     sim_prefix = 'Simulation'
-    for i in range(25, iterations):
+    for i in range(iterations):
         folder = f'{output}/{sim_prefix}_{i}/'
         if not identity:
             cov_file = f'{folder}cov.txt'

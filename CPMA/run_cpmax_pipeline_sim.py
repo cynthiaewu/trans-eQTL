@@ -13,11 +13,6 @@ def cpmax_pipeline(input_folder, scripts_folder, topx):
     if not os.path.isdir(cpmax_folder):
         os.mkdir(cpmax_folder)
     eqtl_file = f'{cpma_folder}/gene-snp-eqtl'
-<<<<<<< HEAD
-=======
-
-  
->>>>>>> 6f57c01a09b9fbae35fab43eae020e9167a7e6b7
     
     #Perform matrix eQTL to get gene-snp pairs
     #matrix_cmd = f'Rscript /storage/cynthiawu/trans_eQTL/Scripts/MatrixeQTL/gene-SNP_pairs.R -g {genotype} -e {expression} -o {eqtl_file}'.split(' ')
@@ -28,15 +23,8 @@ def cpmax_pipeline(input_folder, scripts_folder, topx):
     
     #Obtain zscores and pvalues in a snp by gene matrix format from matrix eQTL output
     
-<<<<<<< HEAD
-    pvalue_file = f'{eqtl_file}_pvalue'
-    
-=======
 
     pvalue_file = f'{eqtl_file}_pvalue'
-    
-    
->>>>>>> 6f57c01a09b9fbae35fab43eae020e9167a7e6b7
     zscore_file = f'{eqtl_file}_zscore'
     
     
