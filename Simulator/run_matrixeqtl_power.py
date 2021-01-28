@@ -24,7 +24,7 @@ def calculate_allpower(input_folder, scripts_folder):
             value = str(beta).replace(".","")
             power_cmd.append(f'python {scripts_folder}/Simulator/calculate_power_matrixeqtl_onesuccess.py -c {input_folder}/numTarget_{tar}/Beta_{value}/metaconfig.yaml -f {input_folder}/numTarget_{tar}/Beta_{value} -i 100'.split(' '))
             # cpma power command
-            #power_cmd.append(f'python {scripts_folder}/Simulator/calculate_power_singleqtl_cpma.py -c {input_folder}/numTarget_{tar}/Beta_{value}/metaconfig.yaml -m 1 -x 1.0 -f {input_folder}/numTarget_{tar}/Beta_{value} -i 100'.split(' '))
+            #power_cmd.append(f'python {scripts_folder}/Simulator/calculate_power_singleqtl_cpma.py -c {input_folder}/numTarget_{tar}/Beta_{value}/metaconfig.yaml -m 5 -x 1.0 -f {input_folder}/numTarget_{tar}/Beta_{value} -i 100'.split(' '))
         power_procs = [ subprocess.Popen(i) for i in power_cmd]
         for p in power_procs:
             p.wait()
