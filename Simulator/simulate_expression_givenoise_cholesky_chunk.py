@@ -101,31 +101,32 @@ def iter_model(config, seed, iterations, output):
     #noise_matrix = np.loadtxt(noise_file)
     if identity:
         #cov = create_gene_corr()
-        #print('Running multivariate normal')
-        cov = np.identity(num_genes)
+        print('Running multivariate normal')
+        #cov = np.identity(num_genes)
+        cov_file = '/projects/ps-gymreklab/cynthiawu/real_gene_correlation/genecorr_realdatacov'
         #cov_file = f'{output}cov.txt'
-        #cov = np.loadtxt(cov_file)
-        #print('Identiy covariance matrix created')
+        cov = np.loadtxt(cov_file)
+        print('Covariance matrix read')
 
         # simulate all noise for all iterations at once (numpy multivariate normal only has to run SD once)
         # Can run into memory error for large sample sizes (samplesize=500)
-        #noise = get_noise(num_genes=num_genes, cov=cov, sample_size=sample_size*iterations)
-        #print('Finished multivariate normal')
+        noise = get_noise(num_genes=num_genes, cov=cov, sample_size=sample_size*iterations, rng=rng)
+        print('Finished multivariate normal')
     sim_prefix = 'Simulation'
     for i in range(iterations):
         folder = f'{output}/{sim_prefix}_{i}/'
         if not identity:
-            cov_file = f'{folder}cov.txt'
+            cov_file = '/projects/ps-gymreklab/cynthiawu/real_gene_correlation/genecorr_realdatacov'
             cov = np.loadtxt(cov_file)
         if beta == 'sd':
             beta_location = f'{folder}/beta.txt'
         if beta == 'value':
             beta_location = f'{output}/beta.txt'
 
-        print('Running multivariate normal')
-        noise_iter = get_noise(num_genes=num_genes, cov=cov, sample_size=sample_size, rng=rng)
-        print('Finished multivariate normal')
-        #noise_iter = noise[i*sample_size:(i*sample_size+sample_size),]
+        #print('Running multivariate normal')
+        #noise_iter = get_noise(num_genes=num_genes, cov=cov, sample_size=sample_size, rng=rng)
+        #print('Finished multivariate normal')
+        noise_iter = noise[i*sample_size:(i*sample_size+sample_size),]
         #model(num_genes, allele_freq, sample_size, num_snps,  f'{folder}/beta.txt', f'{folder}')
         model(num_genes, allele_freq, sample_size, num_snps, beta_location, noise_iter, f'{folder}')
         print(f'Simulation {i}, folder {output}')
