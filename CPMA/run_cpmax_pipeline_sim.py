@@ -17,10 +17,11 @@ def cpmax_pipeline(input_folder, scripts_folder, topx):
     
     #Perform matrix eQTL to get gene-snp pairs
     #matrix_cmd = f'Rscript /storage/cynthiawu/trans_eQTL/Scripts/MatrixeQTL/gene-SNP_pairs.R -g {genotype} -e {expression} -o {eqtl_file}'.split(' ')
+    '''
     matrix_cmd = f'Rscript {scripts_folder}/MatrixeQTL/gene-SNP_pairs.R -g {genotype} -e {expression} -o {eqtl_file}'.split(' ')
     subprocess.call(matrix_cmd)
     print(f'Finished matrix eQTL, {input_folder}')
-    
+    '''
     
     #Obtain zscores and pvalues in a snp by gene matrix format from matrix eQTL output    
     pvalue_file = f'{eqtl_file}_pvalue.gz'
