@@ -18,10 +18,10 @@ def generate_identity(num_genes):
     return np.identity(num_genes)
 
 
-def generate_beta(num_genes, targets, num_nullsnps, beta_type, fixed_betas, rep):
+def generate_beta(num_genes, targets, num_snps, num_nullsnps, beta_type, fixed_betas, rep):
     
     all_betas = []
-
+    num_eqtls = num_snps - num_nullsnps
     # simulate beta values drawn from normal distribution given standard deviation as input
     if beta_type == 'sd':
         for num_t in targets:
@@ -30,7 +30,7 @@ def generate_beta(num_genes, targets, num_nullsnps, beta_type, fixed_betas, rep)
                 beta = np.zeros(num_genes)
                 beta[:num_t] = values
             # iterations
-                for i in range(rep):
+                for i in range(num_eqtls):
                     all_betas.append(beta)
     # simulate same fixed beta values for all target genes given beta value as input 
     if beta_type == 'value':
@@ -40,7 +40,7 @@ def generate_beta(num_genes, targets, num_nullsnps, beta_type, fixed_betas, rep)
                 values = np.full(num_t, beta_value) 
                 beta[:num_t] = values
             # iterations
-                for i in range(rep):
+                for i in range(num_eqtls):
                     all_betas.append(beta)
 
     for i in range(num_nullsnps):
@@ -53,10 +53,10 @@ def generator(num_genes, num_targets, identity, num_snps, num_nullsnps, beta, be
         cov_matrix = generate_cov(num_genes)
         np.savetxt(f'{output}/cov.txt', cov_matrix)
     if beta == 'sd':
-        beta = generate_beta(num_genes, num_targets,num_nullsnps,  beta, beta_sd, rep)
+        beta = generate_beta(num_genes, num_targets, num_snps, num_nullsnps,  beta, beta_sd, rep)
         np.savetxt(f'{output_path}/beta.txt', beta)
     if beta == 'value':
-        beta = generate_beta(num_genes, num_targets, num_nullsnps, beta, beta_value, rep)
+        beta = generate_beta(num_genes, num_targets, num_snps, num_nullsnps, beta, beta_value, rep)
         np.savetxt(f'{output}/beta.txt', beta)
 
 
