@@ -40,13 +40,13 @@ def simulateZscores(zfile, efile, qfile, output, n):
    
     sim_cpma = []
     #iterations = math.ceil(n/30000)
-    iterations = math.ceil(n/100000)
+    iterations = math.ceil(n/50000)
     #print(iterations)
     sim_undone = n
     #perform in chunks of 1000
     for i in range(iterations):
         #cur_n = min(30000, sim_undone)
-        cur_n = min(100000, sim_undone)
+        cur_n = min(50000, sim_undone)
         sim_undone = sim_undone - cur_n
         print(f'{n-sim_undone} {zfile}')
 
@@ -62,6 +62,7 @@ def simulateZscores(zfile, efile, qfile, output, n):
             #print(len(sim))
             cpma = calculate_cpma(sim, n_genes)
             sim_cpma.append(cpma)
+        #print(f'iterations: {iterations}')
 
     print(f'simulated cpma calculated {zfile}')
 
