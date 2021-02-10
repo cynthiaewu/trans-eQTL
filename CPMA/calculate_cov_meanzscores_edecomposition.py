@@ -40,7 +40,7 @@ def calculate_values(input, m_out, e_out, q_out):
     np.savetxt(q_out, Q, delimiter='\t')
     #diag_e_values = np.diag(e_values)
     #E = np.sqrt(diag_e_values)
-    print(f'eigendecomposition values calculated for {covfile}')
+    print(f'eigendecomposition values calculated for {input}')
 
 def main():
     parser = argparse.ArgumentParser()

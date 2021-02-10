@@ -7,6 +7,8 @@ import argparse
 
 def get_pvalues_for_targets(result_file, method):
     results = pd.read_csv(result_file, sep='\t')
+    if method==2 or method==8 or method==9:
+        return float(results.loc[results['snp'] == 'SNP0']['pvalue'])
     if method==3 or method==4:
         samplesize = len(results['p-value'])
         pvalues = results['p-value']
@@ -49,7 +51,8 @@ def get_power(config, method, topx, folder, iterations, num_snps_real):
     for i in range(iterations):
         if method==0:
             result_file = f'{folder}/{sim_prefix}_{i}/CPMA/gene-snp-eqtl_cpma_pvalues_fixed'
-        if method==1:
+        #cpma with null snps
+        if method==1 or method==8:
             result_file = f'{folder}/{sim_prefix}_{i}/CPMAx/gene-snp-eqtl_cpmax_pvalues_{topx}'
         # cpmax on PC expression matrix 
         if method==2:
@@ -63,6 +66,8 @@ def get_power(config, method, topx, folder, iterations, num_snps_real):
             result_file = f'{folder}/{sim_prefix}_{i}/mixtureModel_cpmax/gene-snp-eqtl_mixture_cpmax_pvalue'
         if method==7:
             result_file = f'{folder}/{sim_prefix}_{i}/gammaModel/gene-snp-eqtl_gammateststat'
+        if method==9:
+            result_file = f'{folder}/{sim_prefix}_{i}/CPMA/gene-snp-eqtl_empiricalpvalues_topx_{topx}'
         pvalues = get_pvalues_for_targets(result_file, method)
         all_pvalues.append(pvalues)
     power = calculate_power(all_pvalues, fdr_sig_threshold)
@@ -71,7 +76,7 @@ def get_power(config, method, topx, folder, iterations, num_snps_real):
     power_df = pd.DataFrame(calculated, columns=['#target_genes', 'beta_value', 'power_adjusted'])
     if method==0:
         power_df.to_csv(f'{folder}/power_cpma_adjusted_realnumsnps.txt', index=False, sep='\t')
-    if method==1:
+    if method==1 or method==8:
         power_df.to_csv(f'{folder}/power_cpmax_{topx}_adjusted_realnumsnps.txt', index=False, sep='\t')
     if method==2:
         power_df.to_csv(f'{folder}/power_PCs_cpmax_{topx}.txt', index=False, sep='\t')
@@ -85,6 +90,8 @@ def get_power(config, method, topx, folder, iterations, num_snps_real):
         power_df.to_csv(f'{folder}/power_mixtureModel_cpmax.txt', index=False, sep='\t')
     if method==7:
         power_df.to_csv(f'{folder}/power_gamma_adjusted.txt', index=False, sep='\t')
+    if method==9:
+        power_df.to_csv(f'{folder}/power_cpmax_{topx}_empnull_adjusted_realnumsnps.txt', index=False, sep='\t')
 
 
 def main():

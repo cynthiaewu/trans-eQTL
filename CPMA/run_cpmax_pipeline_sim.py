@@ -6,6 +6,7 @@ import argparse
 def cpmax_pipeline(input_folder, scripts_folder, topx):
     genotype = f'{input_folder}/genotype.csv'
     expression = f'{input_folder}/expression.csv'
+    #expression = f'{input_folder}/peer_residuals.tsv'
     cpma_folder = os.path.join(input_folder, 'CPMA')
     cpmax_folder = os.path.join(input_folder, 'CPMAx')
     if not os.path.isdir(cpma_folder):
@@ -17,24 +18,24 @@ def cpmax_pipeline(input_folder, scripts_folder, topx):
     
     #Perform matrix eQTL to get gene-snp pairs
     #matrix_cmd = f'Rscript /storage/cynthiawu/trans_eQTL/Scripts/MatrixeQTL/gene-SNP_pairs.R -g {genotype} -e {expression} -o {eqtl_file}'.split(' ')
-    '''
+    ''' 
     matrix_cmd = f'Rscript {scripts_folder}/MatrixeQTL/gene-SNP_pairs.R -g {genotype} -e {expression} -o {eqtl_file}'.split(' ')
     subprocess.call(matrix_cmd)
     print(f'Finished matrix eQTL, {input_folder}')
-    '''
+    
     
     #Obtain zscores and pvalues in a snp by gene matrix format from matrix eQTL output    
     pvalue_file = f'{eqtl_file}_pvalue.gz'
     zscore_file = f'{eqtl_file}_zscore.gz'
     
-    '''
+    
     #values_cmd = f'python /storage/cynthiawu/trans_eQTL/Scripts/CPMA/get_values.py -i {eqtl_file} -n {num_genes} -p {pvalue_file} -z {zscore_file}'.split(' ')
     values_cmd = f'python {scripts_folder}/CPMA/get_values.py -i {eqtl_file} -p {pvalue_file} -z {zscore_file}'.split(' ')
     values = subprocess.Popen(values_cmd).wait()
     print(f'Finished getting pvalues and zscores, {input_folder}')
-    '''
-
     
+
+    '''
     #Calculate cpma values with matrix eqtl pvalues output
     cpma_file = f'{cpmax_folder}/gene-snp-eqtl_cpma_topx_{topx}'
     '''
@@ -43,7 +44,7 @@ def cpmax_pipeline(input_folder, scripts_folder, topx):
     cpma = subprocess.Popen(cpma_cmd).wait()
     print(f'Finished calculating cpma, {input_folder}')
     '''
-   
+    '''
     #Calculate the gene covariance matrix and mean zscores for genes
     cov_matrix = f'{eqtl_file}_cov.gz'
     
@@ -56,6 +57,7 @@ def cpmax_pipeline(input_folder, scripts_folder, topx):
     print('Finished calculating mean zscores and eigendecomposition')
 
     ''' 
+    '''
     #Calculate the eigendecomposition
     evalues_file = f'{eqtl_file}_evalues.gz'
     evectors_file = f'{eqtl_file}_Q.gz'
@@ -84,6 +86,14 @@ def cpmax_pipeline(input_folder, scripts_folder, topx):
     compare = subprocess.Popen(compare_cmd).wait()
     print('Finished calculating empirical pvalues from cpma')
     '''
+    
+    #Compare simulated cpma with observed cpma to get an empirical pvalue for each snp
+    num_sim = 500000
+    num_genes = 15000
+    empirical_file = f'{eqtl_file}_empiricalpvalues_identity_topx_{topx}'
+    compare_cmd = f'python {scripts_folder}/Simulator/simulate_empnull_pvalue.py -s {num_sim} -g {num_genes} -o {cpma_file} -e {empirical_file}'.split(' ')
+    compare = subprocess.Popen(compare_cmd).wait()
+    print('Finished calculating empirical pvalues from cpma')
 
 
 def iterate_folders(folder, scripts_folder, topx, iterations):
