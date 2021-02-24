@@ -11,14 +11,14 @@ def write_metaconfigs(input, targets_str, beta_values_str, samplesize):
     #beta_values = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 1]
     #beta_values = [0, 0.05, 0.1, 0.2, 0.3, 0.5, 1]
     beta_values = [0, 0.01, 0.05, 0.1, 1]
-    beta_values = [0]
+    #beta_values = [0]
     #beta_values = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 1]
     for tar in targets:
         for beta in beta_values:
             parameters = {'num_genes': 15000,
                     'num_snps': 1,
                     'num_nullsnps': 0,
-                    'num_factors': 10,
+                    'num_factors': 0,
                     'sample_size': samplesize,
                     'allele_freq': 0.5,
                     'num_targets': [tar],

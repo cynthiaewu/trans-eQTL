@@ -22,6 +22,8 @@ def get_pvalues_for_targets(result_file, method):
         return float(results['mixture_cpmax_pval'])
     if method==7:
         return float(results['empirical_pvalue'])
+    if method==11:
+        return float(results['pvalue'])
     else:
         return float(results['adj_pvalue'])
 
@@ -68,6 +70,10 @@ def get_power(config, method, topx, folder, iterations, num_snps_real):
             result_file = f'{folder}/{sim_prefix}_{i}/gammaModel/gene-snp-eqtl_gammateststat'
         if method==9:
             result_file = f'{folder}/{sim_prefix}_{i}/CPMA/gene-snp-eqtl_empiricalpvalues_topx_{topx}'
+        if method==10:
+            result_file = f'{folder}/{sim_prefix}_{i}/CPMAx_PEER/gene-snp-eqtl_cpmax_pvalues_{topx}'
+        if method==11:
+            result_file = f'{folder}/{sim_prefix}_{i}/CPMA/gene-snp-eqtl_empiricalpvalues_identity_topx_{topx}'
         pvalues = get_pvalues_for_targets(result_file, method)
         all_pvalues.append(pvalues)
     power = calculate_power(all_pvalues, fdr_sig_threshold)
@@ -79,7 +85,7 @@ def get_power(config, method, topx, folder, iterations, num_snps_real):
     if method==1 or method==8:
         power_df.to_csv(f'{folder}/power_cpmax_{topx}_adjusted_realnumsnps.txt', index=False, sep='\t')
     if method==2:
-        power_df.to_csv(f'{folder}/power_PCs_cpmax_{topx}.txt', index=False, sep='\t')
+        power_df.to_csv(f'{folder}/power_PCs_cpmax_{topx}_adjusted_realnumsnps.txt', index=False, sep='\t')
     if method==3:
         power_df.to_csv(f'{folder}/power_PCs.txt', index=False, sep='\t')
     if method==4:
@@ -91,7 +97,12 @@ def get_power(config, method, topx, folder, iterations, num_snps_real):
     if method==7:
         power_df.to_csv(f'{folder}/power_gamma_adjusted.txt', index=False, sep='\t')
     if method==9:
-        power_df.to_csv(f'{folder}/power_cpmax_{topx}_empnull_adjusted_realnumsnps.txt', index=False, sep='\t')
+        #power_df.to_csv(f'{folder}/power_cpmax_{topx}_empnull_adjusted_realnumsnps.txt', index=False, sep='\t')
+        power_df.to_csv(f'{folder}/power_cpmax_{topx}_empnull_notadjusted_realnumsnps.txt', index=False, sep='\t')
+    if method==10:
+        power_df.to_csv(f'{folder}/power_cpmax_{topx}_PEER_adjusted_realnumsnps.txt', index=False, sep='\t')
+    if method==11:
+        power_df.to_csv(f'{folder}/power_cpmax_{topx}_empnull_identity_adjusted_realnumsnps.txt', index=False, sep='\t')
 
 
 def main():

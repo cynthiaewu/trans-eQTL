@@ -30,6 +30,9 @@ def iter_simulations(input, method, topx, iterations, num_test):
         if method==2:
             in_file = f'{input}/{sim_prefix}_{i}/expressionPCs/gene-snp-eqtl_PCs_cpma_topx_{topx}'
             out_file = f'{input}/{sim_prefix}_{i}/expressionPCs/gene-snp-eqtl_PCs_cpmax_pvalues_{topx}'
+        if method==3:
+            in_file = f'{input}/{sim_prefix}_{i}/CPMAx_PEER/gene-snp-eqtl_cpma_topx_{topx}'
+            out_file = f'{input}/{sim_prefix}_{i}/CPMAx_PEER/gene-snp-eqtl_cpmax_pvalues_{topx}'
         compute_pvalue(in_file, num_test, out_file)
     print(f'finished for {input}')
 

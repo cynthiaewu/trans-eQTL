@@ -9,10 +9,10 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
     #targets = [5, 10, 15, 30]
     #targets = [0, 5, 10, 15, 20, 30, 40, 60, 80, 100, 200, 300, 400, 700, 1000, 5000, 10000, 15000]
     #targets = [1, 10, 100, 1000]
-    targets = [0]
+    targets = [1000]
     #beta_values = [0, 0.05, 0.1, 0.2, 0.3, 0.5, 1]
     #beta_values = [0, 0.01, 0.05, 0.1, 1]
-    beta_values = [0]
+    beta_values = [0, 0.05, 0.1]
     #beta_values = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 1]
 
     targets_str = f'{targets}'.replace(' ', '').replace('[', '').replace(']', '')
@@ -68,31 +68,31 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
         cpma_cmd = []
         for beta in beta_values:
             value = str(beta).replace(".","")
-            cpma_cmd.append(f'python {scripts_folder}/CPMA/run_cpmax_pipeline_sim.py -f {input_folder}/numTarget_{tar}/Beta_{value} -p {scripts_folder} -x {topx} -i 1000'.split(' '))
+            cpma_cmd.append(f'python {scripts_folder}/CPMA/run_cpmax_pipeline_sim_peer.py -f {input_folder}/numTarget_{tar}/Beta_{value} -p {scripts_folder} -x {topx} -i 100'.split(' '))
         cpma_procs = [ subprocess.Popen(i) for i in cpma_cmd]
         for p in cpma_procs:
             p.wait()
     print('Finished calculating cpma') 
     
-    ''' 
+     
     print('Starting comparing to chi distribution')
     for tar in targets:
         chidist_cmd = []
         for beta in beta_values:
             value = str(beta).replace(".","")
-            chidist_cmd.append(f'python {scripts_folder}/Simulator/compute_pvalue_chidist.py -i {input_folder}/numTarget_{tar}/Beta_{value} -m 1 -x {topx} -t 1 -n 100'.split(' '))
+            chidist_cmd.append(f'python {scripts_folder}/Simulator/compute_pvalue_chidist.py -i {input_folder}/numTarget_{tar}/Beta_{value} -m 3 -x {topx} -t 1 -n 100'.split(' '))
         chidist_procs = [ subprocess.Popen(i) for i in chidist_cmd]
         for p in chidist_procs:
             p.wait()
     print('Finished comparing to chi distribution')
     
-    
+    ''' 
     print('Starting to calculate power')
     for tar in targets:
         power_cmd = []
         for beta in beta_values:
             value = str(beta).replace(".","")
-            power_cmd.append(f'python {scripts_folder}/Simulator/calculate_power_singleqtl_cpma.py -c {input_folder}/numTarget_{tar}/Beta_{value}/metaconfig.yaml -m 1 -x {topx} -f {input_folder}/numTarget_{tar}/Beta_{value} -i 100'.split(' '))
+            power_cmd.append(f'python {scripts_folder}/Simulator/calculate_power_singleqtl_cpma.py -c {input_folder}/numTarget_{tar}/Beta_{value}/metaconfig.yaml -m 10 -x {topx} -f {input_folder}/numTarget_{tar}/Beta_{value} -i 100'.split(' '))
         power_procs = [ subprocess.Popen(i) for i in power_cmd]
         for p in power_procs:
             p.wait()

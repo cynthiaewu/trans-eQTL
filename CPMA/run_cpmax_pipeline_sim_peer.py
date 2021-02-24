@@ -5,10 +5,10 @@ import argparse
 
 def cpmax_pipeline(input_folder, scripts_folder, topx):
     genotype = f'{input_folder}/genotype.csv'
-    expression = f'{input_folder}/expression.csv'
-    #expression = f'{input_folder}/peer_residuals.tsv'
-    cpma_folder = os.path.join(input_folder, 'CPMA')
-    cpmax_folder = os.path.join(input_folder, 'CPMAx')
+    #expression = f'{input_folder}/expression.csv'
+    expression = f'{input_folder}/peer_residuals.tsv'
+    cpma_folder = os.path.join(input_folder, 'CPMA_PEER')
+    cpmax_folder = os.path.join(input_folder, 'CPMAx_PEER')
     if not os.path.isdir(cpma_folder):
         os.mkdir(cpma_folder)
     if not os.path.isdir(cpmax_folder):
@@ -18,9 +18,9 @@ def cpmax_pipeline(input_folder, scripts_folder, topx):
     
     #Perform matrix eQTL to get gene-snp pairs
     #matrix_cmd = f'Rscript /storage/cynthiawu/trans_eQTL/Scripts/MatrixeQTL/gene-SNP_pairs.R -g {genotype} -e {expression} -o {eqtl_file}'.split(' ')
-    if not os.path.isfile(eqtl_file):
-        matrix_cmd = f'Rscript {scripts_folder}/MatrixeQTL/gene-SNP_pairs.R -g {genotype} -e {expression} -o {eqtl_file}'.split(' ')
-        subprocess.call(matrix_cmd)
+    
+    matrix_cmd = f'Rscript {scripts_folder}/MatrixeQTL/gene-SNP_pairs.R -g {genotype} -e {expression} -o {eqtl_file}'.split(' ')
+    subprocess.call(matrix_cmd)
     print(f'Finished matrix eQTL, {input_folder}')
     
     
@@ -85,15 +85,14 @@ def cpmax_pipeline(input_folder, scripts_folder, topx):
     compare_cmd = f'python {scripts_folder}/CPMA/calculate_empirical_pvalue.py -s {sim_file} -o {cpma_file} -e {empirical_file}'.split(' ')
     compare = subprocess.Popen(compare_cmd).wait()
     print('Finished calculating empirical pvalues from cpma')
-    '''
-    '''
+    
+    
     #Compare simulated cpma with observed cpma to get an empirical pvalue for each snp
     num_sim = 500000
     num_genes = 15000
     empirical_file = f'{eqtl_file}_empiricalpvalues_identity_topx_{topx}'
-    if not os.path.isfile(empirical_file):
-        compare_cmd = f'python {scripts_folder}/Simulator/simulate_empnull_pvalue.py -s {num_sim} -g {num_genes} -o {cpma_file} -e {empirical_file}'.split(' ')
-        compare = subprocess.Popen(compare_cmd).wait()
+    compare_cmd = f'python {scripts_folder}/Simulator/simulate_empnull_pvalue.py -s {num_sim} -g {num_genes} -o {cpma_file} -e {empirical_file}'.split(' ')
+    compare = subprocess.Popen(compare_cmd).wait()
     print('Finished calculating empirical pvalues from cpma')
     '''
 

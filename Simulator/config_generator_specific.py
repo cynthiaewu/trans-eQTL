@@ -3,7 +3,7 @@ import random
 from scipy.stats import truncnorm
 import os
 import yaml
-import time
+import random
 import argparse
 
     
@@ -18,7 +18,7 @@ def generate_identity(num_genes):
     return np.identity(num_genes)
 
 
-def generate_beta(num_genes, targets, num_snps, num_nullsnps, beta_type, fixed_betas, rep):
+def generate_beta(num_genes, targets, num_snps, num_nullsnps, beta_type, fixed_betas, rep, mix):
     
     all_betas = []
     num_eqtls = num_snps - num_nullsnps
@@ -29,6 +29,8 @@ def generate_beta(num_genes, targets, num_snps, num_nullsnps, beta_type, fixed_b
                 values = np.random.normal(0, beta_sd, num_t)
                 beta = np.zeros(num_genes)
                 beta[:num_t] = values
+                if mix == 'True':
+                    np.random.shuffle(beta)
             # iterations
                 for i in range(num_eqtls):
                     all_betas.append(beta)
@@ -39,6 +41,8 @@ def generate_beta(num_genes, targets, num_snps, num_nullsnps, beta_type, fixed_b
                 beta = np.zeros(num_genes)
                 values = np.full(num_t, beta_value) 
                 beta[:num_t] = values
+                if mix == 'True':
+                    np.random.shuffle(beta)
             # iterations
                 for i in range(num_eqtls):
                     all_betas.append(beta)
@@ -48,19 +52,20 @@ def generate_beta(num_genes, targets, num_snps, num_nullsnps, beta_type, fixed_b
     return all_betas
 
 
-def generator(num_genes, num_targets, identity, num_snps, num_nullsnps, beta, beta_sd, beta_value, output_path, output, rep):
+def generator(num_genes, num_targets, identity, num_snps, num_nullsnps, beta, beta_sd, beta_value, output_path, output, rep, mix):
     if not identity:
         cov_matrix = generate_cov(num_genes)
         np.savetxt(f'{output}/cov.txt', cov_matrix)
-    if beta == 'sd':
-        beta = generate_beta(num_genes, num_targets, num_snps, num_nullsnps,  beta, beta_sd, rep)
+    if beta == 'sd' or mix == 'True':
+        beta = generate_beta(num_genes, num_targets, num_snps, num_nullsnps,  beta, beta_sd, rep, mix)
         np.savetxt(f'{output_path}/beta.txt', beta)
-    if beta == 'value':
-        beta = generate_beta(num_genes, num_targets, num_snps, num_nullsnps, beta, beta_value, rep)
-        np.savetxt(f'{output}/beta.txt', beta)
+    if beta == 'value' and mix == 'False' 
+        if not os.path.isfile(f'{output}/beta.txt'):
+            beta = generate_beta(num_genes, num_targets, num_snps, num_nullsnps, beta, beta_value, rep, mix)
+            np.savetxt(f'{output}/beta.txt', beta)
 
 
-def iter_generator(config, seed, iterations, output):
+def iter_generator(config, seed, iterations, mix, output):
     #print(f'Seed = {seed}')
     np.random.seed(seed)
     with open(config) as f:
@@ -88,7 +93,7 @@ def iter_generator(config, seed, iterations, output):
         output_path = os.path.join(output, f'Simulation_{i}')
         if not os.path.isdir(output_path):
             os.mkdir(output_path)
-        generator(num_genes, num_targets, identity, num_snps, num_nullsnps, beta, beta_sd, beta_value, output_path, output, rep)
+        generator(num_genes, num_targets, identity, num_snps, num_nullsnps, beta, beta_sd, beta_value, output_path, output, rep, mix)
     print(f'Finished config generator for #targets: {num_targets} and beta: {beta_sd}')
    
 
@@ -97,12 +102,14 @@ def main():
     parser.add_argument("-c", "--config", required=True, help="Input config file with parameters")
     parser.add_argument("-s", "--seed", type=int, default=0, help="Seed for random generator")
     parser.add_argument("-i", "--iterations", type=int, default=0, help="# iterations for generating cov matrix and beta files")
+    parser.add_argument("-m", "--mix", default=False, help="If mixing/shuffling the target genes is needed")
     parser.add_argument("-o", "--output", required=True, help="Output folder with simulated files")
     params = parser.parse_args()
 
     iter_generator(config=params.config,
           seed=params.seed,
           iterations=params.iterations,
+          mix=params.mix,
           output=params.output)
 
 

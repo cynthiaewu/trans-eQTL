@@ -37,12 +37,14 @@ def get_power(config, folder, num_snps_real, iterations):
     sim_prefix = 'Simulation'
     pvalues = []
     for i in range(iterations):
-        result_file = f'{folder}/{sim_prefix}_{i}/CPMA/gene-snp-eqtl'
+        #result_file = f'{folder}/{sim_prefix}_{i}/CPMA/gene-snp-eqtl'
+        result_file = f'{folder}/{sim_prefix}_{i}/CPMA_PEER/gene-snp-eqtl'
         pvalues.append(get_pvalues_for_targets(result_file, num_targets[0]))
     power = calculate_power(pvalues, correction_threshold)
     calculated = [[num_targets[0], beta_value[0], power]]
     power_df = pd.DataFrame(calculated, columns=['#target_genes', 'beta_value', 'power_adjusted'])
-    power_df.to_csv(f'{folder}/power_matrix-eqtl_onesuccess_realnumsnps.txt', index=False, sep='\t')
+    #power_df.to_csv(f'{folder}/power_matrix-eqtl_onesuccess_realnumsnps.txt', index=False, sep='\t')
+    power_df.to_csv(f'{folder}/power_matrix-eqtl_PEER_onesuccess_realnumsnps.txt', index=False, sep='\t')
 
 
 def main():

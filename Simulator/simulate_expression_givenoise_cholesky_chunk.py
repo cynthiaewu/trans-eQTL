@@ -85,7 +85,7 @@ def create_gene_corr():
 '''
 
 
-def iter_model(config, seed, iterations, output):
+def iter_model(config, seed, iterations, mix, output):
     print(f'Seed = {seed}')
     np.random.seed(seed)
     with open(config) as f:
@@ -118,9 +118,9 @@ def iter_model(config, seed, iterations, output):
         if not identity:
             cov_file = '/projects/ps-gymreklab/cynthiawu/real_gene_correlation/genecorr_realdatacov'
             cov = np.loadtxt(cov_file)
-        if beta == 'sd':
+        if beta == 'sd' or mix =='True':
             beta_location = f'{folder}/beta.txt'
-        if beta == 'value':
+        if beta == 'value' and mix == 'False':
             beta_location = f'{output}/beta.txt'
 
         #print('Running multivariate normal')
@@ -140,6 +140,7 @@ def main():
     #parser.add_argument("-p", "--sim_prefix", required=True, help="Prefix for folders of simulated files (cov matrix and beta files)")
     parser.add_argument("-s", "--seed", type=int, default=0, help="Seed for random generator")
     parser.add_argument("-i", "--iterations", type=int, required=True, help="# iterations to simulate genotype and expression files")
+    parser.add_argument("-m", "--mix", default=False, help="If mixing/shuffling the target genes is needed")
     parser.add_argument("-o", "--output", required=True, help="Output folder with simulated files")
     params = parser.parse_args()
 
@@ -147,6 +148,7 @@ def main():
           #noise_file=params.noise,
           seed=params.seed,
           iterations=params.iterations,
+          mix=params.mix,
           output=params.output)
 
 
