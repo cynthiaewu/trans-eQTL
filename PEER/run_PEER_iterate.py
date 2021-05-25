@@ -4,7 +4,7 @@ import os
 import argparse
 
 def peer_pipeline(input_folder, scripts_folder):
-    peer_cmd = f'Rscript {scripts_folder}/PEER/Run_PEER.r {input_folder}'.split(' ')
+    peer_cmd = f'Rscript {scripts_folder}/PEER/run_PEER.r {input_folder}'.split(' ')
     subprocess.call(peer_cmd)
     print(f'Finished PEER, {input_folder}')
 
