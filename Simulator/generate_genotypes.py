@@ -23,7 +23,7 @@ def write_xfile(array, num_snps, output):
     col = ['Sample' + str(i) for i in range(sample_size)]
     row = ['SNP' + str(i) for i in range(num_snps)]
     df = pd.DataFrame(array, index=row, columns=col)
-    df.to_csv(f'{output}/genotype.csv', index=True, header=True, sep='\t')
+    df.to_csv(f'{output}/genotype_null.csv', index=True, header=True, sep='\t')
 
 
 def iter_model(config, seed, iterations, output):

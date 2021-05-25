@@ -56,10 +56,10 @@ def generator(num_genes, num_targets, identity, num_snps, num_nullsnps, beta, be
     if not identity:
         cov_matrix = generate_cov(num_genes)
         np.savetxt(f'{output}/cov.txt', cov_matrix)
-    if beta == 'sd' or mix == 'True':
+    if beta == 'sd' or mix:
         beta = generate_beta(num_genes, num_targets, num_snps, num_nullsnps,  beta, beta_sd, rep, mix)
         np.savetxt(f'{output_path}/beta.txt', beta)
-    if beta == 'value' and mix == 'False' 
+    if beta == 'value' and not mix:
         if not os.path.isfile(f'{output}/beta.txt'):
             beta = generate_beta(num_genes, num_targets, num_snps, num_nullsnps, beta, beta_value, rep, mix)
             np.savetxt(f'{output}/beta.txt', beta)

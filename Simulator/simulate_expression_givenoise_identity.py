@@ -15,9 +15,13 @@ def generate_genotypes(sample_size, allele_freq, num_snps):
     return np.array(genotype)
 
 
-def get_noise(num_genes, cov, sample_size):
-    return np.random.normal(0, 1, (sample_size, num_genes))
-    #return np.random.multivariate_normal(np.zeros(num_genes), cov, size=sample_size)
+def get_noise(num_genes, cov, sample_size, identity):
+    if identity:
+        print('Simulating noise (identity)')
+        return np.random.normal(0, 1, (sample_size, num_genes))
+    else:
+        print('Simulating noise')
+        return np.random.multivariate_normal(np.zeros(num_genes), cov, size=sample_size)
 
 
 def write_xfile(array, num_snps, output):
@@ -44,7 +48,8 @@ def model(num_genes, allele_freq, sample_size, num_snps, beta_file, noise, outpu
     if num_snps == 1:
         beta = beta.reshape(1, -1)
     #print('starting generating genotypes')
-    X = generate_genotypes(sample_size=sample_size, allele_freq=allele_freq, num_snps=num_snps)
+    X = np.array(pd.read_csv('/gymreklab-tscc/cynthiawu/real_gene_correlation/SampleSize500/null/numTarget_10000/Beta_01/Simulation_0/genotype.csv', index_col=0, sep='\t'))
+    #X = generate_genotypes(sample_size=sample_size, allele_freq=allele_freq, num_snps=num_snps)
     #print('finished generating genotypes')
     sum_X = 0
     #print('started computing summation of beta and genotype')
@@ -67,25 +72,6 @@ def model(num_genes, allele_freq, sample_size, num_snps, beta_file, noise, outpu
     write_yfile(Y, output)
 
 
-'''
-# example gene correlation matrix when cov != identity
-def create_gene_corr():
-    matrix = np.zeros((15000,15000))
-    matrix[0:100, 0:100] = 0.15
-    matrix[100:1000, 100:1000] = 0.5
-    matrix[1000:3000, 1000:3000] = -0.4
-    matrix[3000:7000, 3000:7000] = -0.2
-    matrix[7000:7800, 7000:7800] = 0.05
-    matrix[7800:8000, 7800:8000] = 0.65
-    matrix[8000:9000, 8000:9000] = 0.3
-    matrix[9000:10000, 9000:10000] = -0.15
-    matrix[10000:12000, 10000:12000] = 0.1
-    matrix[12000:12500, 12000:12500] = -0.3
-    np.fill_diagonal(matrix, 1)
-    return matrix
-'''
-
-
 def iter_model(config, seed, iterations, output):
     print(f'Seed = {seed}')
     np.random.seed(seed)
@@ -102,6 +88,7 @@ def iter_model(config, seed, iterations, output):
     if identity:
         #cov = create_gene_corr()
         #print('Running multivariate normal')
+        #print('generating identity matrix')
         cov = np.identity(num_genes)
         #cov_file = f'{output}cov.txt'
         #cov = np.loadtxt(cov_file)
@@ -111,19 +98,27 @@ def iter_model(config, seed, iterations, output):
         # Can run into memory error for large sample sizes (samplesize=500)
         #noise = get_noise(num_genes=num_genes, cov=cov, sample_size=sample_size*iterations)
         #print('Finished multivariate normal')
+    if not identity:
+        print('Loading cov matrix')
+        cov_file = '/gymreklab-tscc/cynthiawu/real_gene_correlation/genecorr_realdatacov'
+        cov = np.loadtxt(cov_file)
+        
     sim_prefix = 'Simulation'
     for i in range(iterations):
         folder = f'{output}/{sim_prefix}_{i}/'
+        '''
         if not identity:
+            print('Loading cov matrix')
             cov_file = f'{folder}cov.txt'
             cov = np.loadtxt(cov_file)
+        '''
         if beta == 'sd':
             beta_location = f'{folder}/beta.txt'
         if beta == 'value':
             beta_location = f'{output}/beta.txt'
 
         print('Running random normal')
-        noise_iter = get_noise(num_genes=num_genes, cov=cov, sample_size=sample_size)
+        noise_iter = get_noise(num_genes=num_genes, cov=cov, sample_size=sample_size, identity=identity)
         print('Finished random normal')
         #noise_iter = noise[i*sample_size:(i*sample_size+sample_size),]
         #model(num_genes, allele_freq, sample_size, num_snps,  f'{folder}/beta.txt', f'{folder}')

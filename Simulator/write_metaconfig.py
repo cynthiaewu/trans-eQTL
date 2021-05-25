@@ -10,8 +10,8 @@ def write_metaconfigs(input, targets_str, beta_values_str, samplesize):
     #targets = [ 0, 20, 40, 60, 80, 100, 150, 200, 250, 300, 350, 400, 450, 500, 700, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000, 10000, 11000, 12000, 13000, 14000, 15000]
     #beta_values = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 1]
     #beta_values = [0, 0.05, 0.1, 0.2, 0.3, 0.5, 1]
-    beta_values = [0, 0.01, 0.05, 0.1, 1]
-    #beta_values = [0]
+    #beta_values = [0, 0.01, 0.05, 0.1, 1]
+    beta_values = [0]
     #beta_values = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 1]
     for tar in targets:
         for beta in beta_values:
@@ -23,7 +23,7 @@ def write_metaconfigs(input, targets_str, beta_values_str, samplesize):
                     'allele_freq': 0.5,
                     'num_targets': [tar],
                     'identity': True,
-                    'iterations': 100,
+                    'iterations': 1,
 		    'beta': 'value',
                     'beta_sd': 'NA',
                     'beta_value': [beta],

@@ -1,7 +1,8 @@
 import argparse
 import numpy as np
 from numpy import linalg as LA
-from scipy.stats import norm
+#from scipy.stats import norm
+from scipy import stats
 import math
 
 
@@ -56,7 +57,8 @@ def simulateZscores(zfile, efile, qfile, output, n):
         #print(mzscores_tile.shape)
         sim_zscores = mzscores_tile + np.dot(e_matrix, z)
         #print(sim_zscores.shape)
-        sim_pvalues = np.transpose(norm.cdf(sim_zscores))
+        #sim_pvalues = np.transpose(2*stats.t.cdf(sim_zscores, df=samplesize-2))
+        sim_pvalues = np.transpose(2*stats.norm.cdf(-np.abs(sim_zscores)))
         #print(sim_pvalues.shape)
         for sim in sim_pvalues:
             #print(len(sim))
@@ -78,6 +80,7 @@ def main():
     parser.add_argument("-q", "--eigenvectors", required=True, help="Input eigenvectorsfile")
     parser.add_argument("-o", "--output", required=True, help="Ouptput file with simulated cpma values")
     parser.add_argument("-n", "--simulations", required=True, type=int, help="Number of simulations")
+    #parser.add_argument("-s", "--samplesize", required=True, type=int, help="Sample size")
     params = parser.parse_args()
     np.random.seed(0)
     simulateZscores(params.mzscores, params.eigenvalues, params.eigenvectors, params.output, params.simulations)
