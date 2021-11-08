@@ -34,7 +34,7 @@ def log_likelihood_neg_gamma(t, alpha, beta, pvals):
 
 def likelihood_ratio_test(pvals):
     null_lklh = log_likelihood_neg_gamma(0, 1, 1, pvals)
-    print(null_lklh)
+    #print(null_lklh)
     alt_lklh = scipy.optimize.minimize(lambda tktheta: log_likelihood_neg_gamma(*tktheta, pvals=pvals),
                                        method='L-BFGS-B',
                                        x0=(0.5, 1, 1),
@@ -44,12 +44,12 @@ def likelihood_ratio_test(pvals):
                                            (10**(-5), None)
                                        )
                                        )['fun']
-    print(alt_lklh)
+    #print(alt_lklh)
     test_stat = -2*(-null_lklh + alt_lklh)
     
-    pvalue = 1 - scipy.stats.chi2.cdf(test_stat, 3)
-    print(pvalue)
-    return pvalue
+    #pvalue = 1 - scipy.stats.chi2.cdf(test_stat, 3)
+    #print(pvalue)
+    return test_stat
 
 
 def get_pvalue(input, output):
@@ -62,14 +62,14 @@ def get_pvalue(input, output):
     num_snps = len(pvalues)
     #num_genes = len(pvalues[1])-1
     num_genes = len(pvalues[0])-1
-    all_metapvals = []
+    all_teststats = []
     for i in range(num_snps):
         all_values = pvalues[i][1:]
         all_values = -np.log(all_values)
-        meta_pval = likelihood_ratio_test(all_values)
-        all_metapvals.append(meta_pval)
+        meta_teststat = likelihood_ratio_test(all_values)
+        all_teststats.append(meta_teststat)
     snps = pd.read_csv(input, usecols=[0], sep='\t', names = ['snp'], skiprows = 1)
-    snps.insert(column = 'mixture_pval', loc = 1, value = all_metapvals)
+    snps.insert(column = 'mixture_test_stats', loc = 1, value = all_teststats)
     #snps.to_csv('/storage/cynthiawu/trans_eQTL/Nerve-Tibial/chr1_gene_snp_eqtls_cpma_nofdr.csv', index=False, header=True, sep='\t')
     snps.to_csv(output, index=False, header=True, sep='\t')
     

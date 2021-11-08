@@ -4,6 +4,7 @@ args = commandArgs(trailingOnly = TRUE)
 foldernm = args[1]
 
 filenm = paste(foldernm, "/expression.csv", sep = "")
+#filenm = paste(foldernm, "/SI_Data_expression_rename.txt", sep = "")
 factorsnm = paste(foldernm, "/peer_factors.tsv", sep = "")
 weightsnm = paste(foldernm, "/peer_weights.tsv", sep = "")
 precisionnm = paste(foldernm, "/peer_precision.tsv", sep = "")

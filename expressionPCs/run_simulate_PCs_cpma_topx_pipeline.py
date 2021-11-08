@@ -50,7 +50,7 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
     print('Finished simulating files')
 
     '''
-    ''' 
+    
     print('Starting computing PCA')
     
     for tar in targets:
@@ -75,7 +75,7 @@ def sim_cpmax_pipeline(input_folder, scripts_folder, topx, samplesize):
         for p in cpma_procs:
             p.wait()
     print('Finished calculating cpma') 
-    '''
+    
 
     #method = 2 for expression pcs cpmax, method = 1 for cpmax
     print('Starting comparing to chi distribution')

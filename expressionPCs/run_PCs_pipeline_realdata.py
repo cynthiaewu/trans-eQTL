@@ -17,14 +17,15 @@ def cpma_pipeline(input_folder, output, scripts_folder):
         if not os.path.isdir(PCs_folder):
             os.mkdir(PCs_folder)
     eqtl_file = f'expressionPCs/matrixeQTL_PCs'
-    
+    '''
     for i in range(1, 23):
         pca_cmd = (f'python {scripts_folder}/expressionPCs/get_expressionPCs_realdata.py -f {input_folder}/chr{i}_gene_intersect.tsv -o {output}/chr{i}/expression_PCs.csv'.split(' '))
         pca = subprocess.Popen(pca_cmd).wait()
     print('Finished computing PCA')
-
+    '''
     for i in range(1, 23):
-        matrix_cmd = f'Rscript /storage/polo/GTEx_v8_matrix_eQTL/Scripts/Run_Matrix_eQTL_PC_PEER_quantile_norm.r {input_folder}/chr{i}_SNP_intersect.tsv {output}/chr{i}/expression_PCs.csv {input_folder}/chr{i}_covariance_intersect.tsv {output}/chr{i}/{eqtl_file}_chr{i}'.split(' ')
+        #matrix_cmd = f'Rscript /storage/polo/GTEx_v8_matrix_eQTL/Scripts/Run_Matrix_eQTL_PC_PEER_quantile_norm.r {input_folder}/chr{i}_SNP_intersect.tsv {output}/chr{i}/expression_PCs.csv {input_folder}/chr{i}_covariance_intersect.tsv {output}/chr{i}/{eqtl_file}_chr{i}'.split(' ')
+        matrix_cmd = f'Rscript /storage/polo/GTEx_v8_matrix_eQTL/Scripts/Run_Matrix_eQTL_PC_PEER_quantile_norm.r {input_folder}/chr{i}_SNP_intersect.tsv {output}/expressionPCs_noPEER_allchrgenes {input_folder}/chr{i}_covariance_intersect.tsv {output}/chr{i}/{eqtl_file}_chr{i}'.split(' ')
         subprocess.call(matrix_cmd)
     
  # Obtain zscores and pvalues in a snp by gene matrix format from matrix eQTL output
@@ -47,7 +48,7 @@ def cpma_pipeline(input_folder, output, scripts_folder):
     cpma_file = f'{eqtl_file}_cpma_converted'
     
     for i in range(1, 23):
-        cpma_cmd = f'python {scripts_folder}/CPMA/calculate_cpma.py -i {output}/chr{i}/{pvalue_file}_chr{i} -o {output}/chr{i}/{cpma_file}_chr{i}'.split(' ')
+        cpma_cmd = f'python {scripts_folder}/CPMA/calculate_cpma_topx.py -i {output}/chr{i}/{pvalue_file}_chr{i} -x 1.0 -o {output}/chr{i}/{cpma_file}_chr{i}'.split(' ')
         cpma = subprocess.Popen(cpma_cmd).wait()
         print(f'Finished calculating cpma for chr{i}')
     print('Finished calculating cpma for all chr')

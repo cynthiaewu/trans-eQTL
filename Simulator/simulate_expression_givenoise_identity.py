@@ -20,7 +20,7 @@ def get_noise(num_genes, cov, sample_size, identity):
         print('Simulating noise (identity)')
         return np.random.normal(0, 1, (sample_size, num_genes))
     else:
-        print('Simulating noise')
+        print('Simulating noise (gene correlation)')
         return np.random.multivariate_normal(np.zeros(num_genes), cov, size=sample_size)
 
 
@@ -48,8 +48,8 @@ def model(num_genes, allele_freq, sample_size, num_snps, beta_file, noise, outpu
     if num_snps == 1:
         beta = beta.reshape(1, -1)
     #print('starting generating genotypes')
-    X = np.array(pd.read_csv('/gymreklab-tscc/cynthiawu/real_gene_correlation/SampleSize500/null/numTarget_10000/Beta_01/Simulation_0/genotype.csv', index_col=0, sep='\t'))
-    #X = generate_genotypes(sample_size=sample_size, allele_freq=allele_freq, num_snps=num_snps)
+    #X = np.array(pd.read_csv('/gymreklab-tscc/cynthiawu/real_gene_correlation/SampleSize500/null/numTarget_10000/Beta_01/Simulation_0/genotype.csv', index_col=0, sep='\t'))
+    X = generate_genotypes(sample_size=sample_size, allele_freq=allele_freq, num_snps=num_snps)
     #print('finished generating genotypes')
     sum_X = 0
     #print('started computing summation of beta and genotype')

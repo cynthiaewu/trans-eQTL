@@ -29,11 +29,12 @@ def cpmax_pipeline(input_folder, scripts_folder, topx):
     zscore_file = f'{eqtl_file}_zscore.gz'
     
     
-    #values_cmd = f'python /storage/cynthiawu/trans_eQTL/Scripts/CPMA/get_values.py -i {eqtl_file} -n {num_genes} -p {pvalue_file} -z {zscore_file}'.split(' ')
-    values_cmd = f'python {scripts_folder}/CPMA/get_values.py -i {eqtl_file} -p {pvalue_file} -z {zscore_file}'.split(' ')
+    # values_cmd = f'python /storage/cynthiawu/trans_eQTL/Scripts/CPMA/get_values.py -i {eqtl_file} -n {num_genes} -p {pvalue_file} -z {    zscore_file}'.split(' ')
+    values_cmd = f'python {scripts_folder}/CPMA/get_values.py -i {eqtl_file} -z {zscore_file}'.split(' ')
+    values = subprocess.Popen(values_cmd).wait()
+    values_cmd = f'python {scripts_folder}/CPMA/tstat_to_pvalue.py -i {zscore_file} -p {pvalue_file}'.split(' ')
     values = subprocess.Popen(values_cmd).wait()
     print(f'Finished getting pvalues and zscores, {input_folder}')
-    
 
     
     #Calculate cpma values with matrix eqtl pvalues output

@@ -20,7 +20,7 @@ def get_expressionPCs(input, output):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-f", "--input", required=True, help="Input expression file")
-    parser.add_argument("-o", "--output", required=True, help="Ouptput expressionPCs file")
+    parser.add_argument("-o", "--output", required=True, help="Output expressionPCs file")
     params = parser.parse_args()
     get_expressionPCs(params.input, params.output)
 

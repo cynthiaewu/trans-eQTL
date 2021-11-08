@@ -6,21 +6,22 @@ import argparse
 def cpmax_pipeline(input_folder, scripts_folder, topx):
     genotype = f'{input_folder}/genotype.csv'
     expression = f'{input_folder}/expression_PCs.csv'
-    covariates = f'{input_folder}/covariates_geno.csv'
+    #covariates = f'{input_folder}/covariates_geno.csv'
     #cpma_folder = os.path.join(input_folder, 'CPMA')
     #cpmax_folder = os.path.join(input_folder, 'CPMAx')
     PCs_folder = os.path.join(input_folder, 'expressionPCs')
     if not os.path.isdir(PCs_folder):
         os.mkdir(PCs_folder)
-    eqtl_file = f'{PCs_folder}/gene-snp-eqtl_PCs_round2'
-    
+    #eqtl_file = f'{PCs_folder}/gene-snp-eqtl_PCs'
+    eqtl_file = f'{PCs_folder}/yeast_matrixeqtl_PCs_PEER'
+    '''
     #Perform matrix eQTL to get gene-snp pairs
     #matrix_cmd = f'Rscript /storage/cynthiawu/trans_eQTL/Scripts/MatrixeQTL/gene-SNP_pairs.R -g {genotype} -e {expression} -o {eqtl_file}'.split(' ')
-    #matrix_cmd = f'Rscript {scripts_folder}/MatrixeQTL/gene-SNP_pairs.R -g {genotype} -e {expression} -o {eqtl_file}'.split(' ')
-    matrix_cmd = f'Rscript {scripts_folder}/MatrixeQTL/gene-SNP_pairs.R -g {genotype} -e {expression} -c {covariates} -o {eqtl_file}'.split(' ')
+    matrix_cmd = f'Rscript {scripts_folder}/MatrixeQTL/gene-SNP_pairs.R -g {genotype} -e {expression} -o {eqtl_file}'.split(' ')
+    #matrix_cmd = f'Rscript {scripts_folder}/MatrixeQTL/gene-SNP_pairs.R -g {genotype} -e {expression} -c {covariates} -o {eqtl_file}'.split(' ')
     subprocess.call(matrix_cmd)
     print(f'Finished matrix eQTL, {input_folder}')
-
+    '''
     
     #Obtain zscores and pvalues in a snp by gene matrix format from matrix eQTL output
     pvalue_file = f'{eqtl_file}_pvalue'

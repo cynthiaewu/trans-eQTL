@@ -21,6 +21,7 @@ def calculate_cpma_topx(input, x, output):
     for i in range(num_snps):
         all_values = pvalues[i][1:]
         all_values.sort()
+        all_values = np.where(all_values > 10**(-150), all_values, 10**(-150))
         all_values = -np.log(all_values)
         top_values = all_values[:top_numgenes]
         bordernum = top_values[-1]

@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from scipy import linalg as LA
+import os
 import argparse
 
 def getCov(input, m_out):
@@ -10,6 +11,9 @@ def getCov(input, m_out):
     scores = np.transpose(np.array(data))
 
     cov = np.cov(scores)
+    cov_out = '/storage/cynthiawu/trans_eQTL/GTex.v8/Run3_070221/Adipose-Subcutaneous_Euro/Adipose-Subcutaneous_cov.txt'
+    if not os.path.isfile(cov_out):
+        np.savetxt(cov_out, cov, delimiter='\t', fmt='%f')
     #cov_matrix = pd.DataFrame(cov, columns=genes)
     print('cov matrix calculated')
 

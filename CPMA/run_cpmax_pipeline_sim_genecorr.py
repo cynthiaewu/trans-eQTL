@@ -12,20 +12,21 @@ def cpmax_pipeline(input_folder, scripts_folder, topx):
         os.mkdir(cpma_folder)
     if not os.path.isdir(cpmax_folder):
         os.mkdir(cpmax_folder)
-    eqtl_file = f'{cpma_folder}/gene-snp-eqtl'    
+    #eqtl_file = f'{cpma_folder}/gene-snp-eqtl'    
+    eqtl_file = f'{cpma_folder}/yeast_matrixeqtl_PEER'    
     '''
     #Perform matrix eQTL to get gene-snp pairs
     #matrix_cmd = f'Rscript /storage/cynthiawu/trans_eQTL/Scripts/MatrixeQTL/gene-SNP_pairs.R -g {genotype} -e {expression} -o {eqtl_file}'.split(' ')
     matrix_cmd = f'Rscript {scripts_folder}/MatrixeQTL/gene-SNP_pairs.R -g {genotype} -e {expression} -o {eqtl_file}'.split(' ')
     subprocess.call(matrix_cmd)
     print(f'Finished matrix eQTL, {input_folder}')   
-    
+    '''
     #Obtain zscores and pvalues in a snp by gene matrix format from matrix eQTL output    
     pvalue_file = f'{eqtl_file}_pvalue_converted.gz'
     zscore_file = f'{eqtl_file}_zscore.gz'
     #pvalue_file = f'{input_folder}/yeast_pvals.csv'
     #zscore_file = f'{input_folder}/yeast_zscores.csv'
-    
+     
     #values_cmd = f'python /storage/cynthiawu/trans_eQTL/Scripts/CPMA/get_values.py -i {eqtl_file} -n {num_genes} -p {pvalue_file} -z {zscore_file}'.split(' ')
     values_cmd = f'python {scripts_folder}/CPMA/get_values.py -i {eqtl_file} -z {zscore_file}'.split(' ')
     values = subprocess.Popen(values_cmd).wait()
@@ -46,15 +47,15 @@ def cpmax_pipeline(input_folder, scripts_folder, topx):
     cpma_cmd = f'python ../mixtureModel/calculate_mixturemodel.py -i {pvalue_file} -o {cpma_file}'.split(' ')
     cpma = subprocess.Popen(cpma_cmd).wait()
     print(f'Finished calculating cpma-mix')
-    '''
+    
     mzscores = f'{eqtl_file}_meanzscores.gz'
     evalues_file = f'{eqtl_file}_evalues.gz'
     evectors_file = f'{eqtl_file}_Q.gz'
-    '''
+    
     cov_cmd = (f'python calculate_cov_meanzscores_edecomposition.py -i {zscore_file} -m {mzscores} -e {evalues_file} -q {evectors_file}'.split(' '))
     cov = subprocess.Popen(cov_cmd).wait()
     print('Finished calculating mean zscores and eigendecomposition')
-    '''
+    
     '''
     #Calculate the gene covariance matrix and mean zscores for genes
     cov_matrix = f'{eqtl_file}_cov.gz'

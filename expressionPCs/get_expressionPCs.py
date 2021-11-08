@@ -5,8 +5,8 @@ import argparse
 
 def get_expressionPCs(input, output):
     #expression = pd.read_csv('/gymreklab-tscc/cynthiawu/Test_nullsnps/simulate_eqtls_only/FastMultivariate/Single_eqtl/SampleSize100/SingleParameter/numTarget_1000/Beta_1/Simulation_0/expression.csv', sep='\t')
-    expression = pd.read_csv(input, sep='\t')
-    expression.set_index('Unnamed: 0', inplace=True)
+    expression = pd.read_csv(input, sep='\t', index_col=0)
+    #expression.set_index('Unnamed: 0', inplace=True)
     samples = list(expression.columns)
     expression_trans = expression.values.transpose()
     pca = sklearn.decomposition.PCA()
