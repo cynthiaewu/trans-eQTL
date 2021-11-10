@@ -1,9 +1,11 @@
 num_genes: 1000
-num_snps: 1
-sample_size: 100
+num_snps: 1000
+num_nullsnps: 999
+sample_size: 200
 allele_freq: 0.5
-num_targets: 20
+num_targets: 200
 identity: True
 iterations: 100
 beta_sd: fixed
+beta_value: 0.5
 sig_threshold: 0.05

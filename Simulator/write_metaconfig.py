@@ -2,8 +2,8 @@ import yaml
 import argparse
 
 
-def write_metaconfigs(input, targets_str, beta_values_str, samplesize):
-    targets = [int(x) for x in targets_str.split(',')]
+def write_metaconfigs(input, samplesize):
+    #targets = [int(x) for x in targets_str.split(',')]
     #beta_values = [float(x) for x in beta_values_str.split(',')]
     #beta_values = beta_values_str.split(',')
     #print(beta_values)
@@ -11,6 +11,7 @@ def write_metaconfigs(input, targets_str, beta_values_str, samplesize):
     #beta_values = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 1]
     #beta_values = [0, 0.05, 0.1, 0.2, 0.3, 0.5, 1]
     #beta_values = [0, 0.01, 0.05, 0.1, 1]
+    targets=[0]
     beta_values = [0]
     #beta_values = [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 1]
     for tar in targets:
@@ -23,11 +24,9 @@ def write_metaconfigs(input, targets_str, beta_values_str, samplesize):
                     'allele_freq': 0.5,
                     'num_targets': [tar],
                     'identity': True,
-                    'iterations': 1,
-		    'beta': 'value',
+		            'beta': 'value',
                     'beta_sd': 'NA',
                     'beta_value': [beta],
-                    'rep': 1,
                     'sig_threshold': 0.05}
             value = str(beta).replace(".","")
             filename = f'{input}/numTarget_{tar}/Beta_{value}/metaconfig.yaml'
@@ -38,14 +37,14 @@ def write_metaconfigs(input, targets_str, beta_values_str, samplesize):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", required=True, help="Input folder with folders of targets and beta values")
-    parser.add_argument("-t", "--targets_str", required=True, help="Input # target genes")
-    parser.add_argument("-b", "--beta_values_str", required=True, help="Input beta values")
+    #parser.add_argument("-t", "--targets_str", required=True, help="Input # target genes")
+    #parser.add_argument("-b", "--beta_values_str", required=True, help="Input beta values")
     parser.add_argument("-s", "--samplesize", type=int, default=0, help="Sample size")
     params = parser.parse_args()
     
     write_metaconfigs(input=params.input,
-          targets_str=params.targets_str,
-          beta_values_str=params.beta_values_str,
+          #targets_str=params.targets_str,
+          #beta_values_str=params.beta_values_str,
           samplesize=params.samplesize)
 
 

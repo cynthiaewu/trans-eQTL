@@ -1,6 +1,5 @@
 num_genes: 1000
-num_snps: 1
-sample_size: 100
+sample_size: 200
 allele_freq: 0.5
 num_targets: 20
 identity: True
