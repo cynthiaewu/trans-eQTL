@@ -9,22 +9,27 @@ For CPMA method, run_simulate_cpma_pipeline.py Input folder is where all the sim
  run_simulate_cpma_topx_pipeline.py -i input_folder -p scripts_folder -s samplesize -x topx
  ```
 # Simulator
-1. Generate metaconfig yaml file to be used for simulations. Input folder must contain the numTarget_x and Beta_x folders. Need to manually edit the parameters desired for simulations in this script. 
+1. Create a metaconfig yaml file with desired settings for simulations. User can copy over the example metaconfig.yaml and manually change parameters or they can use write_metaconfig.py script to generate a metaconfig.yaml file. The script can generate multiple metaconfig.yaml files for various numTarget genes and betas. If using the script, the input folder must contain the numTarget_x and Beta_y folders in the folder format numTarget_x/Beta_y with x=number of target genes and y=beta value in the format of the value without the decimal point (e.g. 0.05 would be 005).
+   
+#### metaconfig.yaml parameters:
+- num_genes = # of total genes, default = 15,000 genes
+- num_snps = # of total snps, default = 1 snp
+- num_nullsnps = # of null snps with no beta effect size on all genes, default = 0 null snp
+- num_factors = # of PEER factors, default = 0 factors
+- sample_size = # samples/individuals, default = 500 samples
+- allele_freq = allele frequency of snps, default = 0.5
+- num_targets = # target genes of eqtl. If using script to generate metaconfig.yaml for multiple target genes, set this to be a list of target gene values separated by , with no spaces in between (e.g. 100,200,300). This can also be one value if only testing one # target genes 
+- identity = True if no gene correlation, False if gene correlation, default = True
+- beta = 'value' or 'sd', default = "value" 
+  - If set to "value," the parameter beta_value needs to be set to the desired beta effect size value which will be used for all target genes. 
+  - If set to "sd," the beta effect size value for the target genes will be drawn from a normal distribution with mean 0 and SD set in the parameter beta_sd. 
+- beta_sd = 'NA' if beta = 'value', else the standard deviation value of normal distribution with mean 0 to draw beta effect size values for the target genes.
+- beta_value = 'NA' if beta = 'sd', else beta effect size for all target genes. If using script to generate metaconfig.yaml for multiple beta values, set this to be a list of beta values in float format separated by , with no spaces in between (e.g. 0.05,0.1,0.2). This can also be one value if only testing one # beta value 
+- sig_threshold = significance threshold for calculating the power of the eqtl methods
 
-- The parameter beta needs to be either "value" or "sd". 
-  - If it is set to be "value," the parameter beta_value needs to be set to the desired beta effect size value which will be used for all target genes. 
-  - If the parameter beta is set to be "sd," the beta effect size vallue for the target genes will be drawn from a distribution with mean 0 and SD set in the parameter beta_sd. 
-- The parameter num_targets is the #target genes the eqtl is to target. 
-- The parameter num_snps is the # of eqtls desired in the simulation. 
-- The parameter num_nullsnps is the # of null snps with no beta effect size desired in the simulation. 
-- The parameter sample_size is the sample size for the genotype and expression files in the simulations. 
-- The parameter allele_freq is used for creating the genotype files for the snps. 
-- The parameter identity is set to be True for using the identity matrix to simulate the noise matrix used for simulations or False if a gene covariance matrix is given to simulate the noise matrix. 
-- The parameter rep is used for "manysiminone" simulations where one simulation contains multiple eqtls with different parameters. 
-- The parameter sig_threshold is used to set the significance for calculating the power of the eqtl methods. 
-
+To run the script to generate metaconfig.yaml files. 
    ```
-   python write_metaconfig.py -i input_folder -s samplesize
+   python write_metaconfig.py -x input_folder -t num_targets {-g num_genes} {-v num_snps} {-n num_nullsnps} {-f num_factors} {-s samplesize} {-a allele_freq} {-c identity} {-b beta} {-d beta_sd} {-v beta_value} {-h sig_threshold}
    ```
    
 2. Generate config files with a given metaconfig yaml file
