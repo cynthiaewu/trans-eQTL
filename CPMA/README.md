@@ -1,136 +1,75 @@
 # CPMA
-## Files
-Genotypes:
-/storage/mgymrek/gtex-estrs/revision/genotypes/
 
-Expression:
-/storage/szfeupe/Runs/650GTEx_estr/Analysis_by_Tissue/Review_Rerun
-
-Covariates:
-/storage/szfeupe/Runs/GTEx_estr/gtex650.pca
-
-/storage/cynthiawu/trans_eQTL/gtex650_transpose.pca    
-
-To choose the covariates file (can decide to include only European samples):
-/storage/cynthiawu/trans_eQTL/Covariates
-
-## Preprocessing Steps
-
-a. Get gene annotations, keep only protein coding genes
-
-tail -n +7 /storage/resources/dbase/human/gene_annotations/gencode.v19.genes.v7.patched_contigs.gtf| awk -F '\t' '{print $9}' | cut -d ';' -f 1,3,5| cut -d '"' -f 2,4,6 | sed 's/"/\t/g' > /storage/cynthiawu/trans_eQTL/gene_annotations_gencode.v19.genes.v7.csv
-
-b. Get allele count, allele frequency, HWE annotations for each snp
-
-bcftools query -i 'AF[0]>0.01 && AC[0]>2 && HWP>0.001' -f'%CHROM\t%POS\t%AF{1}\t%AC{1}\t%HWP\n' GTEx_Analysis_20150112_WholeGenomeSeq_VarSitesAnnot.vcf.gz -o /storage/cynthiawu/trans_eQTL/GTex_filteredsnps.txt
-
-Get a list of the filtered snp positions in format chr_pos
-
-format_filtersnps.py -i input_bcftool_output -o output_snp_pos_file
-
-```
-zcat /storage/resources/datasets/gtex/53844/PhenoGenotypeFiles/RootStudyConsentSet_phs000424.GTEx.v6.p1.c1.GRU/GenotypeFiles/phg000520.v2.GTEx_MidPoint_WGS_SNP_CNV.genotype-calls-vcf.c1/GTEx_Analysis_20150112_WholeGenomeSeq_VarSitesAnnot.vcf.gz| tail -n +146 | awk -F '\t' '{print $1, $2, $8}' | sed -E 's/(.+) (.+) AC=(.+);\AF=(.+);AN=(.+);HWP=(.+);In(.+)/\1 \2 \3 \4 \6/' > /storage/cynthiawu/trans_eQTL/GTEx_snp_AC_AF_HWE.txt
-
-sed -i "1s/.*/chr pos AC AF HWE/" GTEx_snp_AC_AF_HWE.txt
-```
-
-c. Get SUBJID, SEX, AGE, TRISCHD, DTHHRDY as covariates
-
- zcat phs000424.v7.pht002742.v7.p2.c1.GTEx_Subject_Phenotypes.GRU.txt.gz| tail -n +11 | awk -F '\t' '{print $2, $4, $5, $15, $35}' OFS='\t' > /storage/cynthiawu/trans_eQTL/gtex_covariates.txt
+ ## Files
  
- ## To run all steps below in one script
- Input genotype is path to all genotype files. Covariate files can contain all or only European samples.
- ```
- run_cpma_pipeline.py -g input_genotypes -e input_expression -t tissue -c covariates_file -o output_folder
- ```
- Example:
+ ### Run from step 1
+ Genotype file
+ 
+ Expression file
+ 
+ Covariates file (optional)
+ 
+ #### OR
+ 
+ ### Run from step 2
+ 
+ pairwise matrix-eqtl results
+ 
+ ## To run all steps below in one script for files obtained from the simulation framework
+ 
+ folder = path to folder with all simulated file
+ scripts_folder = path to all scripts
+ method = 1 for CPMA, 2 for x-QTL, 0 to run both
+ iterations = number of simulations
+ -q to run matrix eqtl first to get pairwise snp-gene pairs values for CPMA and/or x-QTL
+ -g to account for gene correlation; only for simulations with gene correlation
+ 
  ``` 
- python run_cpma_pipeline.py -g /storage/mgymrek/gtex-estrs/revision/genotypes -e  /storage/szfeupe/Runs/650GTEx_estr/Analysis_by_Tissue/Review_Rerun/Thyroid/Clean_expression.tsv -t Thyroid -c /storage/cynthiawu/trans_eQTL/Covariates/gtex650_Covariates+PCs.txt -o /storage/cynthiawu/trans_eQTL/Thyroid/AllSamples
+ python run_cpma_xqtl_pipeline.py -f folder -p scripts_folder -m method -i iterations -q -g 
  ```
  
  ## Steps
-1. Intersect expression and genotype files to get intersecting samples. Keep only the intersecting columns of the expression and covariate file. Genotype files are for individual chromosomes
+ 
+1. Run Matrix eQTL. Input genotype and expression files. Output matrix eqtl file of pairwise snp-gene pairs
    ```
-   find_sample_intersect.py -g input_genotype_file -e input_expression_file -c input_covariates_file -i intersect_output -p expression_output -q covariates_output
-    ```
-    Preprocess the genotype files for each chr to get intersecting samples
-    
+   Rscript ../MatrixeQTL/Run_Matrix_eQTL_PC_PEER_quantile_norm.r -g {genotype} -e {expression} -o {matrixeqtl_file}
    ```
-   preprocess_genotypefile.py -g input_genotype_file -i intersect_file -o genotype_output 
+2. Get the zscores (T-stat) in snp by gene format from Matrix eQTL output. Input matrix eqtl results from Step 1. Output zscore file
    ```
-   
-2. Filtering Steps
+   python get_values.py -i {matrixeqtl_file} -z {zscore_file}
+   ```
+3. Get the pvalues from the T-stats file. Input zscore_file from Step 2. Output pvalue file
+   ```
+   python tstat_to_pvalue.py -i {zscore_file} -p {pvalue_file}
+   ```
 
-    Filter Genotype file to get only snps in coding regions. Get snps with SNPs with MAF > 0.01, minor allele count >= 3, HWE > 0.001. snp list = /storage/cynthiawu/trans_eQTL/GTex_filteredsnps_pos.txt
+4. Calculate CPMA and/or x-QTL values for each snp from pvalues file. Input pvalue file from Step 3. Output cpma or xqtl file
    ```
-   filter_snps.py -i input_preprocess_genotype_file -s filtered_snp_list -o output_file -c chr_number
+   python calculate_cpma.py -i {pvalues_file} -o {cpma_file}
    ```
-   
-    Filter Expression file. Get protein coding genes and genes with rpkm > 0.1 in at least 10 samples.
-    ```
-    filter_genes.py -i input_file -o out_filtered_file
-    ```
-    
-    Get the European sample for the genotype and expression files **(Might not be needed)**
-    ```
-    get_european_samples.py -i input_file -e european_samples_file -t type_file (0 for genotype, 1 for expression) -o data_euro_output
-    ```
+   ```
+   python ../x-QTL/calculate_mixturemodel.py -i {pvalues_file} -o {xqtl_file}
+   ```
+### If no gene correlation needs to be adjusted for (simulation framework with identity set to True), follow step 5
+5. Obtain pvalue for each snp from cpma values. Since there is no gene correlation, cpma values can be compared to the chi distribution with df=1. Input cpma_file from Step 4. Output empirical_file with pvalue for each snp
+   ```
+   python ../Simulator/compute_pvalue_chidist_nocorr.py  -i {cpma_file} -o {empirical_file}
+   ```
+      
+### If gene correlation needs to be adjusted for, follow steps 6-8
+6. Calculate the eigendecomposition from the gene covariance matrix observed from the zscore file. Also obtain the mean zscores for genes. Input zscore file from Step 2. Output mean zscores (mzscores), eigenvalues (evalues_file), and eigenvectors (evectors_file)
+   ```
+   python calculate_cov_meanzscores_edecomposition.py -i {zscore_file} -m {mzscores} -e {evalues_file} -q {evectors_file}
+   ```
+
+7. Simulate empirical cpma values and xqtl values from normal distribution with eigendecomposition values and mean zscores. Input mean zscores (mzscores), eigenvalues (evalues_file), and eigenvectors (evectors_file) from Step 5. Output sim_file with simulated empirical null cpma and sim_mix_file with simulated empirical null xqtl values. num_sim = number of simulated cpma/xqtl values. Recommended num_sim = 500000
+
+   ```
+   python ../x-QTL/simulate_cpma-mix_chunks.py -z {mzscores} -e {evalues_file} -q {evectors_file} -o {sim_file} -m {sim_mix_file} -n {num_sim}
+   ```
  
-    Get the covariates for the European samples
-    ```
-    get_european_samples_covariates.py -i input_covariate_file -e european_samples_file -o cov_euro_output
-    ```
- 
-3. Run Matrix eQTL
+8. Compare simulated cpma with observed cpma to get an empirical pvalue for each snp. Input sim_file from Step 6 and cpma_file from Step 4. Output empirical_file with empirical pvalue for each snp
    ```
-   gene-SNP_pairs.R input_coding_genotype_file input_intersect_expression_file pca_file output
+   python calculate_empirical_pvalue.py -s {sim_file} -o {cpma_file} -e {empirical_file}
    ```
-4. Get the zscores (T-stat) and pvalues in snp by gene format from Matrix eQTL output
-   ```
-   get_values.py -i input_matrixeqtl_file -n num_genes -p out_pvalues -z out_zscores
-   ```
-   
-   To merge all zscores file into one file:
-   
-   ```
-   cp gene_snp_zscores_chr1.csv all_chr_zscores.csv
-   ```
-   ```
-   for CHR in {2..22}; do tail -n +2 -q Nerve-Tibial/chr$CHR/gene_snp_zscores_chr$CHR.csv  >> all_chr_zscores.csv; done
-   ```
-5. Calculate CPMA values for each snp from pvalues file
-   ```
-   calculate_cpma.py -i input_pvalues_file -o cpma_output
-   ```
-  
-    To check the distribution of cpma values follows the chi distribution of df=1, we generated random pvalues from a normal distribution and calculated cpma values for these
-   ```
-   generate_random_pvalue.py 
-   ```
-6. Calculate the gene covariance matrix and mean zscores for genes with zscores file
-   ```
-   calculate_cov_meanzscores.py -i input_zscores_file -c cov_out -m mzscores_out
-   ```
-7. Calculate the eigendecomposition and mean zscores
-   ```
-   calculate_edecomposition.py -c input_cov_matrix_file -e eigenvalues_output -q eigenvectors_output
-   ```
-8. Simulate cpma values from normal distribution with gene covariance matrix and mean zscores
-   ```
-   simulate_cpma.py -z input_mean_zscores_file -e input_eigenvalues_file -q input_eigenvectors_file -o sim_output -n num_simulations
-   ```
-   
-   Perform simulations in chunks of 5000
-   
-   ```
-   simulate_cpma_chunks.py -z input_mean_zscores_file -e input_eigenvalues_file -q input_eigenvectors_file -o sim_output -n num_simulations
-   ```
-9. Compare simulated cpma with observed cpma to get an empirical pvalue for each snp
-   ```
-   calculate_empirical_pvalue.py -s simulated_cpma -o observed_cpma -e empirical_pvalues_output
-   ```
-10. Get qvalues from empirical pvalues
-11. Get consequence annotation for every snp.
-    ```
-    zcat GTEx_Analysis_20150112_WholeGenomeSeq_VarSitesAnnot.vcf.gz| tail -n +146 | awk -F '\t' '{print $1, $2, $8}' | sed -E 's/(.+) (.+) (.+);CSQ=([^|]+)\|([^|]+)\|(.+)/\1 \2 \5/' > /storage/cynthiawu/trans_eQTL/Gtex_snp-consq.txt
-    ```
+*** TODO: xqtl empirical pvalues and simulate empirical null from randomly permuted snp genotype of different allele freq or bin diff allele freq instead of eigendecomposition
