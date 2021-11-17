@@ -44,7 +44,7 @@ def main():
     parser.add_argument("-f", "--num_factors", type=int, default=0, help="# of PEER factors")
     parser.add_argument("-s", "--samplesize", type=int, default=500, help="Sample size")
     parser.add_argument("-a", "--allele_freq", type=float, default=0.5, help="allele frequency of snps")
-    parser.add_argument("-c", "--identity", action='store_false', help="True if no gene correlation, False if gene correlation (covariance matrix will be the gene correlation matrix of Nerve Tibial GTeX data")
+    parser.add_argument("-c", "--correlation", action='store_false', help="Include gene correlation (covariance matrix will be the gene correlation matrix of Nerve Tibial GTeX data")
     parser.add_argument("-b", "--beta", type=str, default='value', help="'value' or 'sd'")
     #parser.add_argument("-d", "--beta_sd", type=float, default=-1, help="standard deviation value of normal distribution with mean 0 to draw beta effect size values for the target genes")
     parser.add_argument("-v", "--beta_value", required=True, help="beta effect size for all target genes, either fixed value or standard deviation value")
@@ -59,7 +59,7 @@ def main():
           num_factors=params.num_factors,
           samplesize=params.samplesize,
           allele_freq=params.allele_freq,
-          identity=params.identity,
+          identity=params.correlation,
           beta=params.beta,
           #beta_sd=params.beta_sd,
           beta_value=params.beta_value,
