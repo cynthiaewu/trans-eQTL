@@ -93,7 +93,7 @@ def iter_generator(config, seed, iterations, mix, output):
         if not os.path.isdir(sim_path):
             os.mkdir(sim_path)
         generator(num_genes, num_targets, identity, num_snps, num_nullsnps, beta, beta_value, sim_path, output, mix)
-    print(f'Finished config generator for #targets: {num_targets} and beta: {beta_sd}')
+    print(f'Finished config generator for #targets: {num_targets} and beta: {beta_value}')
    
 
 def main():

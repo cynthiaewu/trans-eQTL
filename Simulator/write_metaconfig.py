@@ -24,6 +24,11 @@ def write_metaconfigs(input, num_targets, num_genes, num_snps, num_nullsnps, num
                     'beta_value': [b],
                     'sig_threshold': sig_threshold}
             value = str(b).replace(".","")
+            if (b.is_integer()):
+                value = str(int(b))
+            else:
+                value = str(b).replace(".","")
+
             filename = f'{input}/numTarget_{tar}/Beta_{value}/metaconfig.yaml'
             #filename = f'/storage/cynthiawu/trans_eQTL/Scripts/Test_nullsnps/simulate_eqtls_only/FastMultivariate/Single_eqtl/SampleSize100/SingleParameter/numTarget_{tar}/Beta_{value}/metaconfig.yaml'
             with open(filename, 'w') as file:
