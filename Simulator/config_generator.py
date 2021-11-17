@@ -50,12 +50,12 @@ def generate_beta(num_genes, targets, num_snps, num_nullsnps, beta_type, fixed_b
     return all_betas
 
 
-def generator(num_genes, num_targets, identity, num_snps, num_nullsnps, beta, beta_sd, beta_value, sim_path, output, mix):
+def generator(num_genes, num_targets, identity, num_snps, num_nullsnps, beta, beta_value, sim_path, output, mix):
     if not identity:
         cov_matrix = generate_cov(num_genes)
         np.savetxt(f'{output}/cov.txt', cov_matrix)
     if beta == 'sd' or mix:
-        beta = generate_beta(num_genes, num_targets, num_snps, num_nullsnps,  beta, beta_sd, mix)
+        beta = generate_beta(num_genes, num_targets, num_snps, num_nullsnps,  beta, beta_value, mix)
         # different beta for each simulation saved in each simulation folder
         np.savetxt(f'{sim_path}/beta.txt', beta)
     if beta == 'value' and not mix:
@@ -76,7 +76,7 @@ def iter_generator(config, seed, iterations, mix, output):
     num_nullsnps = params['num_nullsnps']
     identity = params['identity']
     beta = params['beta']
-    beta_sd = params['beta_sd']
+    #beta_sd = params['beta_sd']
     beta_value = params['beta_value']
     # don't actually have to create and save identity cov matrix, can just call numpy to create a identity matrix during calculations
     # faster than reading and writing the files for identity cov matrix
@@ -92,7 +92,7 @@ def iter_generator(config, seed, iterations, mix, output):
         sim_path = os.path.join(output, f'Simulation_{i}')
         if not os.path.isdir(sim_path):
             os.mkdir(sim_path)
-        generator(num_genes, num_targets, identity, num_snps, num_nullsnps, beta, beta_sd, beta_value, sim_path, output, mix)
+        generator(num_genes, num_targets, identity, num_snps, num_nullsnps, beta, beta_value, sim_path, output, mix)
     print(f'Finished config generator for #targets: {num_targets} and beta: {beta_sd}')
    
 

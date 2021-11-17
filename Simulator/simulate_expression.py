@@ -115,7 +115,7 @@ def iter_model(config, seed, iterations, output):
             beta_location = f'{folder}/beta.txt'
         if beta == 'value':
             beta_location = f'{output}/beta.txt'
-
+        
         noise_iter = get_noise(num_genes=num_genes, cov=cov, sample_size=sample_size, identity=identity)
         #noise_iter = noise[i*sample_size:(i*sample_size+sample_size),]
         #model(num_genes, allele_freq, sample_size, num_snps,  f'{folder}/beta.txt', f'{folder}')

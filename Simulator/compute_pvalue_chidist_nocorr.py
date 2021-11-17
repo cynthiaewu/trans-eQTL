@@ -21,7 +21,7 @@ def compute_pvalue(input, num_test, output):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", required=True, help="Input file with cpma values per snp")
-    parser.add_argument("-t", "--num_test", type=int, required=True, help="Number of tests to correct pvalues with")
+    parser.add_argument("-t", "--num_test", type=int, default=10000, help="Number of tests to correct pvalues with")
     parser.add_argument("-o", "--output", required=True, help="Output file with cpma values, pvalues, adjusted pvalues per snp")
     params = parser.parse_args()
 

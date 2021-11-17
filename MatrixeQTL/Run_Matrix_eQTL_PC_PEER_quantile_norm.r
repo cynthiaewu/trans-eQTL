@@ -1,10 +1,26 @@
 library("MatrixEQTL");
 
-args = commandArgs(trailingOnly = TRUE)
-SNP_file_name = args[1]
-expression_file_name = args[2]
-covariates_file_name = args[3]
-output_file_name = args[4]
+suppressPackageStartupMessages(library("argparse"))
+parser <- ArgumentParser()
+parser$add_argument("-g", "--genotype", help="Input genotype file", required=TRUE)
+parser$add_argument("-e", "--expression", help="Input expression file", required=TRUE)
+parser$add_argument("-o", "--output", help="Output file", required=TRUE)
+parser$add_argument("-c", "--covariates", help="Input covariates file")
+args <- parser$parse_args()
+# args <- parser$parse_args(c('--genotype', '--expression', '--output'))
+#accumulate_fn <- get(args$accumulate)
+#print(accumulate_fn(args$integers))
+SNP_file_name <- args$genotype
+expression_file_name <- args$expression
+covariates_file_name <- args$covariates
+output_file_name <- args$output
+#print(c(SNP_file_name, expression_file_name, output_file_name))
+
+#args = commandArgs(trailingOnly = TRUE)
+#SNP_file_name = args[1]
+#expression_file_name = args[2]
+#covariates_file_name = args[3]
+#output_file_name = args[4]
 
 useModel = modelLINEAR;
 #SNP_file_name = "./GTEx_Analysis_2017-06-05_v8_WholeGenomeSeq_866Indiv_chr1_vcftools_addedfilter.intersect.table";

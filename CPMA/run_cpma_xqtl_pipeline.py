@@ -20,7 +20,7 @@ def cpmaxqtl_pipeline(input_folder, scripts_folder, topx, method, matrixeqtl, ge
     
     if matrixeqtl: 
         #Perform matrix eQTL to get gene-snp pairs
-        matrix_cmd = f'Rscript {scripts_folder}/MatrixeQTL/gene-SNP_pairs.R -g {genotype} -e {expression} -o {eqtl_file}'.split(' ')
+        matrix_cmd = f'Rscript {scripts_folder}/MatrixeQTL/Run_Matrix_eQTL_PC_PEER_quantile_norm.r -g {genotype} -e {expression} -o {eqtl_file}'.split(' ')
         subprocess.call(matrix_cmd)
         print(f'Finished matrix eQTL, {input_folder}')   
     
@@ -79,7 +79,14 @@ def cpmaxqtl_pipeline(input_folder, scripts_folder, topx, method, matrixeqtl, ge
             empirical_file = f'{eqtl_file}_empiricalpvalues_topx_{topx}_converted'
             compare_cmd = f'python {scripts_folder}/CPMA/calculate_empirical_pvalue.py -s {sim_file} -o {cpma_file} -e {empirical_file}'.split(' ')
             compare = subprocess.Popen(compare_cmd).wait()
-            print('Finished calculating empirical pvalues from cpma')
+            print('Finished calculating empirical pvalues for cpma from simulated empirical null distribution, gene correlation')
+    else:
+        if method==0 or method==1: 
+            cpma_file = f'{cpma_folder}/gene-snp-eqtl_cpma_topx_{topx}_converted'
+            empirical_file = f'{eqtl_file}_empiricalpvalues_topx_{topx}_converted'
+            emp_cmd = (f'python {scripts_folder}/Simulator/compute_pvalue_chidist_nocorr.py -i {cpma_file} -o {empirical_file}'.split(' '))
+            emp = subprocess.Popen(emp_cmd).wait()
+            print('Finished calculating empirical pvalues for cpma from chi distribution, no gene correlation')
 
 
 def iterate_folders(folder, scripts_folder, topx, method, iterations, matrixeqtl, genecorr):
