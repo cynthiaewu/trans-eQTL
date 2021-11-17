@@ -1,8 +1,7 @@
 # Matrix eQTL
 
  ## Files
- 
- ### Run from step 1
+
  Genotype file
  
  Expression file
