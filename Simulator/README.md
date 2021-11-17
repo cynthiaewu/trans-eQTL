@@ -9,7 +9,7 @@
 - sample_size = # samples/individuals, default = 500 samples
 - allele_freq = allele frequency of snps, default = 0.5
 - num_targets = # target genes of eqtl. If using script to generate metaconfig.yaml for multiple target genes, set this to be a list of target gene values separated by , with no spaces in between (e.g. 100,200,300). This can also be one value if only testing one # target genes 
-- identity = True if no gene correlation, False if gene correlation (covariance matrix will be the gene correlationn matrix of Nerve Tibial GTeX data), default = True
+- identity = True if no gene correlation, False if gene correlation (covariance matrix will be the gene correlation matrix of Nerve Tibial GTeX data), default = True. -c to include gene correlation
 - beta = 'value' or 'sd', default = "value" 
   - If set to "value," the parameter beta_value needs to be set to the desired beta effect size value which will be used for all target genes. 
   - If set to "sd," the beta effect size value for the target genes will be drawn from a normal distribution with mean 0 and SD set in the parameter beta_sd. 
@@ -19,7 +19,7 @@
 
 To run the script to generate metaconfig.yaml files. 
    ```
-   python write_metaconfig.py -x input_folder -t num_targets {-g num_genes} {-x num_snps} {-n num_nullsnps} {-f num_factors} {-s samplesize} {-a allele_freq} {-c identity} {-b beta} {-v beta_value} {-p sig_threshold}
+   python write_metaconfig.py -x input_folder -t num_targets {-g num_genes} {-x num_snps} {-n num_nullsnps} {-f num_factors} {-s samplesize} {-a allele_freq} {-c} {-b beta} {-v beta_value} {-p sig_threshold}
    ```
    
 2. Generate config files with a given metaconfig yaml file
