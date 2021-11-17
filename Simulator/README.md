@@ -13,13 +13,13 @@
 - beta = 'value' or 'sd', default = "value" 
   - If set to "value," the parameter beta_value needs to be set to the desired beta effect size value which will be used for all target genes. 
   - If set to "sd," the beta effect size value for the target genes will be drawn from a normal distribution with mean 0 and SD set in the parameter beta_sd. 
-- beta_sd = 'NA' if beta = 'value', else the standard deviation value of normal distribution with mean 0 to draw beta effect size values for the target genes.
-- beta_value = 'NA' if beta = 'sd', else beta effect size for all target genes. If using script to generate metaconfig.yaml for multiple beta values, set this to be a list of beta values in float format separated by , with no spaces in between (e.g. 0.05,0.1,0.2). This can also be one value if only testing one # beta value 
+- beta_value = fixed beta effect size for all target genes if beta = 'value'. beta_value = the standard deviation value of normal distribution with mean 0 to draw beta effect size values for the target genes if beta = 'sd'.
+  If using script to generate metaconfig.yaml for multiple beta values, set this to be a list of beta values in float format separated by , with no spaces in between (e.g. 0.05,0.1,0.2). This can also be one value if only testing one # beta value 
 - sig_threshold = significance threshold for calculating the power of the eqtl methods
 
 To run the script to generate metaconfig.yaml files. 
    ```
-   python write_metaconfig.py -x input_folder -t num_targets {-g num_genes} {-v num_snps} {-n num_nullsnps} {-f num_factors} {-s samplesize} {-a allele_freq} {-c identity} {-b beta} {-d beta_sd} {-v beta_value} {-h sig_threshold}
+   python write_metaconfig.py -x input_folder -t num_targets {-g num_genes} {-x num_snps} {-n num_nullsnps} {-f num_factors} {-s samplesize} {-a allele_freq} {-c identity} {-b beta} {-v beta_value} {-p sig_threshold}
    ```
    
 2. Generate config files with a given metaconfig yaml file
