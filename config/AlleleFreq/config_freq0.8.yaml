@@ -1,8 +1,0 @@
-num_genes: 1000
-sample_size: 150
-allele_freq: 0.8
-num_targets: 20
-identity: True
-iterations: 100
-beta_sd: fixed
-sig_threshold: 0.05

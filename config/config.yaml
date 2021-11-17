@@ -1,6 +1,0 @@
-num_genes: 4
-sample_size: 5
-allele_freq: 0.5
-num_targets: 3
-identity: True
-iterations: 5
