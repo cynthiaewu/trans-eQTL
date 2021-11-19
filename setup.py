@@ -24,6 +24,13 @@ with open(os.path.join(curdir, 'xQTL/version.py'), 'w') as fout:
                        "version = '{version}'",
                        "__version__ = version"]).format(version=VERSION)
         )
+with open(os.path.join(curdir, 'simulate/version.py'), 'w') as fout:
+        fout.write(
+            "\n".join(["",
+                       "# THIS FILE IS GENERATED FROM SETUP.PY",
+                       "version = '{version}'",
+                       "__version__ = version"]).format(version=VERSION)
+        )
 
 setup(name=NAME,
       version=VERSION,
