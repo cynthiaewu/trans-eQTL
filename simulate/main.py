@@ -39,7 +39,7 @@ def MSG(msg):
 	sys.stderr.write("[PROGRESS]: " + msg.strip() + "\n")
 
 class ExprSimulator:
-	def __init__(self, cov, num_genes=DEFAULT_NUM_GENES, \
+	def __init__(self, cov="identity", num_genes=DEFAULT_NUM_GENES, \
 				num_samples=DEFAULT_NUM_SAMPLES, \
 				num_snps=DEFAULT_NUM_SNPS, \
 				num_nullsnps=DEFAULT_NUM_NULLSNPS, \
@@ -48,6 +48,8 @@ class ExprSimulator:
 				num_targets=DEFAULT_NUM_TARGETS, \
 				beta=DEFAULT_BETA, \
 				beta_sd=DEFAULT_BETA_SD):
+		if cov == "identity":
+			cov = np.identity(num_genes)
 		self.cov = cov
 		self.num_genes = num_genes
 		self.num_samples = num_samples
@@ -61,8 +63,7 @@ class ExprSimulator:
 
 	def Simulate(self, output_folder):
 		# Get noise (numsamp x numgene matrix)
-		noise = np.random.multivariate_normal(np.zeros(self.num_genes), \
-        	self.cov, size=self.num_samples)
+		noise = self.generate_noise()
 
 		# Get genotypes
 		X = self.generate_genotypes()
@@ -84,6 +85,10 @@ class ExprSimulator:
 
 		# Write to a file
 		self.write_sim(X, Y, betas, output_folder)
+
+	def generate_noise(self):
+		return np.random.multivariate_normal(np.zeros(self.num_genes), \
+        	self.cov, size=self.num_samples)
 
 	def generate_effects(self):
 		num_total_snps = self.num_snps+self.num_nullsnps
@@ -118,7 +123,7 @@ class ExprSimulator:
 
 		# Write betas
 		outb = open(os.path.join(output_folder, "betas.csv"), "w")
-		header = ["SNP"] + ["Gene%s"%i for i in range(self.num_snps+self.num_nullsnps)]
+		header = ["SNP"] + ["Gene%s"%i for i in range(self.num_genes)]
 		outb.write(",".join(header)+"\n")
 		for i in range(self.num_snps+self.num_nullsnps):
 			outitems = ["SNP%s"%i]
@@ -160,7 +165,7 @@ def main(args):
 	if not os.path.exists(args.out):
 		os.mkdir(args.out)
 
-	simulator = ExprSimulator(cov, \
+	simulator = ExprSimulator(cov=cov, \
 		num_genes=args.num_genes, \
 		num_samples=args.num_samples, \
 		num_snps=args.num_snps, \
