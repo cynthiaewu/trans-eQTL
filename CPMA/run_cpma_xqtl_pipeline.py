@@ -58,7 +58,7 @@ def cpmaxqtl_pipeline(input_folder, scripts_folder, topx, method, matrixeqtl, ge
         evalues_file = f'{eqtl_file}_evalues.gz'
         evectors_file = f'{eqtl_file}_Q.gz'
         
-        cov_cmd = (f'python calculate_cov_meanzscores_edecomposition.py -i {zscore_file} -m {mzscores} -e {evalues_file} -q {evectors_file}'.split(' '))
+        cov_cmd = (f'python {scripts_folder}/CPMA/calculate_cov_meanzscores_edecomposition.py -i {zscore_file} -m {mzscores} -e {evalues_file} -q {evectors_file}'.split(' '))
         cov = subprocess.Popen(cov_cmd).wait()
         print('Finished calculating mean zscores and eigendecomposition')
         
