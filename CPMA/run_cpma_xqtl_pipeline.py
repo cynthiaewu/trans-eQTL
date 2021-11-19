@@ -35,7 +35,7 @@ def cpmaxqtl_pipeline(input_folder, scripts_folder, topx, method, matrixeqtl, ge
     values = subprocess.Popen(values_cmd).wait()
     print(f'Finished getting pvalues and zscores, {input_folder}')
     
-    convert_cmd = f'python tstat_to_pvalue.py -i {zscore_file} -p {pvalue_file}'.split(' ')
+    convert_cmd = f'python {scripts_folder}/CPMA/tstat_to_pvalue.py -i {zscore_file} -p {pvalue_file}'.split(' ')
     convert = subprocess.Popen(convert_cmd).wait()
     
     if method==0 or method==1:
