@@ -4,13 +4,15 @@
 Tool to simulate expression data
 
 Example command:
-TODO
-
-"""
+xQTL-simulate --out test --num-samples 10 \
+     --num-genes 20 --num-nullsnps 2 \
+     --beta 0.2 --beta-sd 0 --num-targets 2
+ """
 
 import argparse
 import numpy as np
 import os
+from scipy.stats import bernoulli
 import sys
 from simulate import __version__
 
@@ -58,7 +60,90 @@ class ExprSimulator:
 		self.beta_sd = beta_sd
 
 	def Simulate(self, output_folder):
-		ERROR("Not implemented")
+		# Get noise (numsamp x numgene matrix)
+		noise = np.random.multivariate_normal(np.zeros(self.num_genes), \
+        	self.cov, size=self.num_samples)
+
+		# Get genotypes
+		X = self.generate_genotypes()
+
+		# Get PEER
+		peer = self.generate_peer()
+
+		# Get matrix of effect sizes
+		betas = self.generate_effects()
+
+		# Get genetic effect. Assume effects of
+		# each SNP are additive and independent
+		sum_X = 0
+		for i in range(self.num_snps):
+			sum_X += (np.outer(betas[i], X[i]))
+ 
+		# Put it together in one model
+		Y = sum_X + peer + np.array(noise).T
+
+		# Write to a file
+		self.write_sim(X, Y, betas, output_folder)
+
+	def generate_effects(self):
+		num_total_snps = self.num_snps+self.num_nullsnps
+		betas = np.zeros((num_total_snps, self.num_genes))
+		for i in range(self.num_snps):
+			for j in range(self.num_targets):
+				betas[i,j] = np.random.normal(self.beta, self.beta_sd)
+		return betas
+
+	def write_sim(self, X, Y, betas, output_folder):
+		# Write genotypes
+		outx = open(os.path.join(output_folder, "genotypes.csv"), "w")
+		header = ["SNP"] + ["Sample%s"%i for i in range(self.num_samples)]
+		outx.write(",".join(header)+"\n")
+		for i in range(self.num_snps):
+			outitems = ["SNP%s"%i]
+			for j in range(self.num_samples):
+				outitems.append(str(X[i, j]))
+			outx.write(",".join(outitems)+"\n")
+		outx.close()
+
+		# Write phenotypes
+		outy = open(os.path.join(output_folder, "expression.csv"), "w")
+		header = ["Gene"] + ["Sample%s"%i for i in range(self.num_samples)]
+		outy.write(",".join(header)+"\n")
+		for i in range(self.num_genes):
+			outitems = ["Gene%s"%i]
+			for j in range(self.num_samples):
+				outitems.append(str(Y[i,j]))
+			outy.write(",".join(outitems)+"\n")
+		outy.close()
+
+		# Write betas
+		outb = open(os.path.join(output_folder, "betas.csv"), "w")
+		header = ["SNP"] + ["Gene%s"%i for i in range(self.num_snps+self.num_nullsnps)]
+		outb.write(",".join(header)+"\n")
+		for i in range(self.num_snps+self.num_nullsnps):
+			outitems = ["SNP%s"%i]
+			for j in range(self.num_genes):
+				outitems.append(str(betas[i,j]))
+			outb.write(",".join(outitems)+"\n")
+		outb.close()
+
+	def generate_genotypes(self):
+		genotype = []
+		for i in range(self.num_snps+self.num_nullsnps):
+			allele1 = bernoulli.rvs(self.maf, size=self.num_samples)
+			allele2 = bernoulli.rvs(self.maf, size=self.num_samples)
+			genotype.append(allele1 + allele2)
+		return np.array(genotype)
+
+	def generate_peer(self):
+		factor_level = np.random.normal(0, 0.6, (self.num_samples, self.num_peer))
+		factor_weight = []
+		for i in range(self.num_peer):
+			var_k = 0.8*((np.random.gamma(2.5, 0.6))**2)
+			factor_weight.append(np.random.normal(0, var_k, self.num_genes))
+		factor_weight = np.array(factor_weight)
+		peer = np.dot(factor_level, factor_weight).T
+		return peer
 
 def main(args):
 	np.random.seed(args.seed)
