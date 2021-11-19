@@ -47,7 +47,7 @@ setup(name=NAME,
       packages=find_packages(),
       include_package_data=True,
       license_file="LICENSE.txt",
-      scripts=["xQTL/testsupport/test_xqtl.sh", "simulate/testsupport/test_simulate.sh"],
+      scripts=["xQTL/tests/test_xqtl.sh", "simulate/tests/test_simulate.sh"],
       entry_points={
           'console_scripts': [
               'xQTL-simulate=simulate.main:run',
