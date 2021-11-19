@@ -83,7 +83,7 @@ def cpmaxqtl_pipeline(input_folder, scripts_folder, topx, method, matrixeqtl, ge
     else:
         if method==0 or method==1: 
             cpma_file = f'{cpma_folder}/gene-snp-eqtl_cpma_topx_{topx}_converted'
-            empirical_file = f'{eqtl_file}_empiricalpvalues_topx_{topx}_converted'
+            empirical_file = f'{eqtl_file}_chidist_topx_{topx}_converted'
             emp_cmd = (f'python {scripts_folder}/Simulator/compute_pvalue_chidist_nocorr.py -i {cpma_file} -o {empirical_file}'.split(' '))
             emp = subprocess.Popen(emp_cmd).wait()
             print('Finished calculating empirical pvalues for cpma from chi distribution, no gene correlation')
