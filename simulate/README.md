@@ -38,7 +38,7 @@ Type `xQTL-simulate --help` for a full list of available options. Basic options 
 
 ## Output files
 
-xQT-simulate will output a separate folder `$OUT/sim-$i` for each simulation round, where `$OUT` is the argument to `--out` and `$i` is the simulation number, starting at 0.
+xQTL-simulate will output a separate folder `$OUT/sim-$i` for each simulation round, where `$OUT` is the argument to `--out` and `$i` is the simulation number, starting at 0.
 
 Each folder contains:
 * `genotypes.csv`: A csv file with one row per SNP and one column per sample. SNP genotypes are 0, 1, or 2.

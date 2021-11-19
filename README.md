@@ -15,7 +15,7 @@ To install xQTL locally, run:
 python3 setup.py install --user
 ```
 
-This will install the commands `xQTL-simulate` and `xQTL-run`.
+This will install the commands `xQTL-simulate` and `xQTL-run`. Type `xQTL-simulate --help` or `xQTL-run --help` for usage information.
 
 # Developer notes
 
