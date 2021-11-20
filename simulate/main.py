@@ -6,12 +6,14 @@ Tool to simulate expression data
 Example command:
 xQTL-simulate --out test --num-samples 10 \
      --num-genes 20 --num-nullsnps 2 \
-     --beta 0.2 --beta-sd 0 --num-targets 2
+     --beta 0.2 --beta-sd 0 --num-targets 2 \
+     --run-matrix-eqtl
  """
 
 import argparse
 import numpy as np
 import os
+from rpy2 import robjects
 from scipy.stats import bernoulli
 import sys
 from simulate import __version__
@@ -150,6 +152,44 @@ class ExprSimulator:
 		peer = np.dot(factor_level, factor_weight).T
 		return peer
 
+def RunMatrixEQTL(output_folder):
+	genotype = os.path.join(output_folder, "genotypes.csv")
+	expression = os.path.join(output_folder, "expression.csv")
+	eqtl_file = os.path.join(output_folder, "matrixEQTL.out")
+	cmd = '''
+library(MatrixEQTL);
+useModel = modelLINEAR;
+pvOutputThreshold = 1;
+errorCovariance = numeric();
+snps = SlicedData$new();
+snps$fileDelimiter = ",";      # the TAB character
+snps$fileOmitCharacters = "None"; # denote missing values;
+snps$fileSkipRows = 1;          # one row of column labels
+snps$fileSkipColumns = 1;       # one column of row labels
+snps$fileSliceSize = 2000;      # read file in slices of 2,000 rows
+snps$LoadFile("%s");
+gene = SlicedData$new();
+gene$fileDelimiter = ",";      # the TAB character
+gene$fileOmitCharacters = "NA"; # denote missing values;
+gene$fileSkipRows = 1;          # one row of column labels
+gene$fileSkipColumns = 1;       # one column of row labels
+gene$fileSliceSize = 2000;      # read file in slices of 2,000 rows
+gene$LoadFile("%s");
+me = Matrix_eQTL_engine(
+  snps = snps,
+  gene = gene,
+  output_file_name = "%s",
+  pvOutputThreshold = pvOutputThreshold,
+  useModel = useModel,
+  errorCovariance = errorCovariance,
+  verbose = TRUE,
+  pvalue.hist = TRUE,
+  min.pv.by.genesnp = FALSE,
+  noFDRsaveMemory = FALSE);
+		'''%(genotype, expression, eqtl_file)
+	print(cmd)
+	robjects.r(cmd)
+
 def main(args):
 	np.random.seed(args.seed)
 
@@ -182,6 +222,8 @@ def main(args):
 		if not os.path.exists (output_folder):
 			os.mkdir(output_folder)
 		simulator.Simulate(output_folder)
+		if args.run_matrix_eqtl:
+			RunMatrixEQTL(output_folder)
 
 	MSG("Done!")
 	return 0
@@ -201,6 +243,8 @@ def getargs():
     sim_group.add_argument("--beta-sd", help="Std.dev of effect sizes", type=float, default=DEFAULT_BETA_SD)
     sim_group.add_argument("--num-sim", help="Number of iterations of the simulation to run", type=int, default=1)
     sim_group.add_argument("-s", "--seed", help="Seed for random generator", type=int, default=0, )
+    other_group = parser.add_argument_group("Other options")
+    other_group.add_argument("--run-matrix-eqtl", help="Run matrix eQTL on output", action="store_true")
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--out", help="Output prefix", type=str, required=True)
     ver_group = parser.add_argument_group("Version")
