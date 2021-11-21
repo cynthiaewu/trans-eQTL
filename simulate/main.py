@@ -50,8 +50,6 @@ class ExprSimulator:
 				num_targets=DEFAULT_NUM_TARGETS, \
 				beta=DEFAULT_BETA, \
 				beta_sd=DEFAULT_BETA_SD):
-		if cov == "identity":
-			cov = np.identity(num_genes)
 		self.cov = cov
 		self.num_genes = num_genes
 		self.num_samples = num_samples
@@ -89,7 +87,10 @@ class ExprSimulator:
 		self.write_sim(X, Y, betas, output_folder)
 
 	def generate_noise(self):
-		return np.random.multivariate_normal(np.zeros(self.num_genes), \
+		if self.cov == "identity":
+			return np.random.normal(0, 1, (self.num_samples, self.num_genes))
+		else: 
+			return np.random.multivariate_normal(np.zeros(self.num_genes), \
         	self.cov, size=self.num_samples)
 
 	def generate_effects(self):
@@ -182,12 +183,10 @@ me = Matrix_eQTL_engine(
   pvOutputThreshold = pvOutputThreshold,
   useModel = useModel,
   errorCovariance = errorCovariance,
-  verbose = TRUE,
   pvalue.hist = TRUE,
   min.pv.by.genesnp = FALSE,
   noFDRsaveMemory = FALSE);
 		'''%(genotype, expression, eqtl_file)
-	print(cmd)
 	robjects.r(cmd)
 
 def main(args):
@@ -195,7 +194,7 @@ def main(args):
 
 	# Set up covariance matrix
 	if args.gxg_corr is None:
-		cov = np.identity(args.num_genes)
+		cov = "identity"
 	else:
 		if not os.path.exists(args.gxg_corr):
 			ERROR("Could not find file %s"%args.gxg_corr)

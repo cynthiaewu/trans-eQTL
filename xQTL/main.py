@@ -4,11 +4,15 @@
 Tool to simulate expression data
 
 Example command:
-TODO xQTL-run 
+xQTL-run --input test/sim-0/matrixEQTL.out --out test
 """
 
 import argparse
+import numpy as np
+import os
 import pandas as pd
+from scipy import stats
+import sys
 
 from xQTL import __version__
 
@@ -25,7 +29,21 @@ def main(args):
 
 	# Load Matrix eQTL data
 	data = pd.read_csv(args.input, sep="\t")
-	zscores = data.pivot_table(index='SNP', columns='gene', values='t-stat')
+	#zscores = data.pivot_table(index='SNP', columns='gene', values='t-stat')
+
+	# Convert tvals to pvals
+	#print(zscores) # TODO figure this out
+	#pvalues = 2*stats.norm.cdf(-np.abs(zscores))
+	#print(pvalues)
+	#zscores["pval"] = 2*stats.norm.cdf(-np.abs(zscores))
+
+	# TODO - compute test statistics, either 
+	# using CPMA  ./calculate_cpma.py
+	# or xQTL ./calculate_mixturemodel.py
+	# Add options for either
+
+	# TODO - get pval on test stat
+
 	ERROR("Not implemented")
 
 def getargs(): 
