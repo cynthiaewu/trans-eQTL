@@ -189,6 +189,13 @@ me = Matrix_eQTL_engine(
 		'''%(genotype, expression, eqtl_file)
 	robjects.r(cmd)
 
+def WriteConfig(cmd, args, outfile):
+	outf = open(outfile, "w")
+	outf.write("command,%s\n"%(cmd))
+	for arg in vars(args):
+		outf.write("%s,%s\n"%(arg, getattr(args, arg)))
+	outf.close()
+
 def main(args):
 	np.random.seed(args.seed)
 
@@ -221,6 +228,7 @@ def main(args):
 		if not os.path.exists (output_folder):
 			os.mkdir(output_folder)
 		simulator.Simulate(output_folder)
+		WriteConfig(" ".join(sys.argv), args, os.path.join(output_folder, "config.csv"))
 		if args.run_matrix_eqtl:
 			RunMatrixEQTL(output_folder)
 
