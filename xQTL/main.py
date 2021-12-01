@@ -28,6 +28,8 @@ def main(args):
 		ERROR("Could not find %s"%args.input)
 
 	# Load Matrix eQTL data
+	# TODO - require matrix eQTL results sorted by SNP, then analyze data for one SNP at a time
+	# can parralelize by SNP
 	data = pd.read_csv(args.input, sep="\t")
 	#zscores = data.pivot_table(index='SNP', columns='gene', values='t-stat')
 
