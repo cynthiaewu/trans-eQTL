@@ -54,16 +54,12 @@ def write_yfile(array, output):
     df.to_csv(f'{output}/expression.csv', index=True, header=True, sep='\t')
 
 
-def model(num_genes, allele_freq, sample_size, num_snps, beta_file, num_factors, noise, output):
-    
-    beta = np.loadtxt(beta_file)
-    
+def model(num_genes, allele_freq, sample_size, num_snps, beta_file, num_factors, noise, output):    
+    beta = np.loadtxt(beta_file)    
     if num_snps == 1:
         beta = beta.reshape(1, -1)
     
-    #print('starting generating genotypes')
     X = generate_genotypes(sample_size=sample_size, allele_freq=allele_freq, num_snps=num_snps)
-    #print('finished generating genotypes')
     sum_X = 0
     #print('started computing summation of beta and genotype')
     for i in range(num_snps):
@@ -75,11 +71,6 @@ def model(num_genes, allele_freq, sample_size, num_snps, beta_file, num_factors,
         Y = sum_X + peer + np.array(noise).T
     else:
         Y = sum_X + np.array(noise).T
-    #print('finished computing summation of beta and genotype')
-    #print('starting getting noise')
-    #noise = get_noise(num_genes=num_genes, cov=cov, sample_size=sample_size)
-    #print('finished getting noise')
-    #print('finished computing expression')
     #Y = np.outer(beta, X)  + np.array(noise).T
     write_xfile(X, num_snps, output)
     write_yfile(Y, output)
@@ -100,17 +91,19 @@ def iter_model(config, seed, iterations, output):
     beta = params['beta']
     if identity:
         cov = np.identity(num_genes)
-
         # simulate all noise for all iterations at once (numpy multivariate normal only has to run SD once)
         # Can run into memory error for large sample sizes (samplesize=500)
         #noise = get_noise(num_genes=num_genes, cov=cov, sample_size=sample_size*iterations)
         #print('Finished multivariate normal')
+    if not identity:
+        print('Loading cov matrix')
+        cov_file = '/gymreklab-tscc/cynthiawu/real_gene_correlation/genecorr_realdatacov'
+        #cov_file = f'{folder}cov.txt'
+        cov = np.loadtxt(cov_file)
+
     sim_prefix = 'Simulation'
     for i in range(iterations):
         folder = f'{output}/{sim_prefix}_{i}/'
-        if not identity:
-            cov_file = f'{folder}cov.txt'
-            cov = np.loadtxt(cov_file)
         if beta == 'sd':
             beta_location = f'{folder}/beta.txt'
         if beta == 'value':

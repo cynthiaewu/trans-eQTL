@@ -4,7 +4,7 @@ import os
 import argparse
 
 def cpmaxqtl_pipeline(input_folder, scripts_folder, topx, method, matrixeqtl, genecorr):
-    genotype = f'{input_folder}/genotype.csv'
+    genotype = f'{input_folder}/genotype_permute.csv'
     expression = f'{input_folder}/expression.csv'
     matrixeqtl_folder = os.path.join(input_folder, 'Matrixeqtl')
     cpma_folder = os.path.join(input_folder, 'CPMA')
@@ -59,7 +59,7 @@ def cpmaxqtl_pipeline(input_folder, scripts_folder, topx, method, matrixeqtl, ge
         evectors_file = f'{eqtl_file}_Q.gz'
         
         cov_cmd = (f'python {scripts_folder}/CPMA/calculate_cov_meanzscores_edecomposition.py -i {zscore_file} -m {mzscores} -e {evalues_file} -q {evectors_file}'.split(' '))
-        cov = subprocess.Popen(cov_cmd).wait()
+        #cov = subprocess.Popen(cov_cmd).wait()
         print('Finished calculating mean zscores and eigendecomposition')
         
         #Simulate cpma values from normal distribution with gene covariance matrix and mean zscores
@@ -90,7 +90,7 @@ def cpmaxqtl_pipeline(input_folder, scripts_folder, topx, method, matrixeqtl, ge
 
 
 def iterate_folders(folder, scripts_folder, topx, method, iterations, matrixeqtl, genecorr):
-    for i in range(iterations):
+    for i in range(0, iterations):
         input_folder = f'{folder}/Simulation_{i}'
         print(f'Starting eqtl for Simulation {i}, {folder}')
         cpmaxqtl_pipeline(input_folder, scripts_folder, topx, method, matrixeqtl, genecorr)
