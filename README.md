@@ -1,26 +1,7 @@
 # trans-eQTL
+## Methods
+1. Matrix eQTL: Pairwise SNP vs. gene. (genome-wide, or for a subset of SNPs e.g. protein-coding)
+2. CPMA: joint method (SNP vs. all genes, look at p-value distribution)
+3. x-QTL: joint method (SNP vs. all genes, look at mixture of p-values)
 
-** Under construction **
-
-This repository contains the following utilities for simulating expression datasets and running various methods for trans-eQTL detection:
-
-* [`xQTL-simulate`](simulate/README.md): Tool for simulating expression datasets for a cohort of individuals
-* `xQTL-run`: Tool for detecting trans-eQTL using either the published CPMA method or our new mixture model based method (xQTL). (**Not yet implemented**)
-
-# Install
-
-To install xQTL locally, run:
-
-```
-python3 setup.py install --user
-```
-
-This will install the commands `xQTL-simulate` and `xQTL-run`. Type `xQTL-simulate --help` or `xQTL-run --help` for usage information.
-
-# Developer notes
-
-To run tests:
-
-```
-python -m pytest --cov=. --cov-report term-missing
-```
+#### Instructions of how to run each specific method are in their respective folders.
