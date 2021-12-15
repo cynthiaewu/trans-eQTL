@@ -62,20 +62,28 @@ def likelihood_ratio_test(pvals, trueT=None, trueL=None):
     #pvalue = 1 - scipy.stats.chi2.cdf(test_stat, 1)
     return test_stat, bestT, bestL
 
-def RunSNP(snp, tstats, CPMA=False, XQTL=False):
+def GetPvalue(null_method, null_values, test_stat):
+    if null_method == "chi2":
+        pval = -1 # TODO get based on chi2 distribution
+    else:
+        pval = -1 # TODO get from null_values
+    return pval
+
+def RunSNP(snp, tstats, CPMA=False, XQTL=False, \
+        null_method="chi2", null_values_cpma=None, null_values_xqtl=None):
     results = {}
     results["snp"] = snp
     pvalues = 2*stats.norm.cdf(-np.abs(tstats))
     if CPMA:
         cpma = calculate_cpma(pvalues)
         results["CPMA"] = cpma
-        results["CPMA_p"] = None # TODO
+        results["CPMA_p"] = GetPvalue(null_method, null_values_cpma, cpma)
     if XQTL:
         test_stat, best_T, best_L = calculate_xqtl(pvalues)
         results["xQTL"] = test_stat
         results["predicted_T"] = best_T
         results["predicted_L"] = best_L
-        results["xQTL_p"] = None # TODO
+        results["xQTL_p"] = GetPvalue(null_method, null_values_xqtl, test_stat)
     return results
 
 def WriteSNP(results, outf, CPMA=False, XQTL=False):
@@ -87,12 +95,13 @@ def WriteSNP(results, outf, CPMA=False, XQTL=False):
             results["predicted_L"], results["xQTL_p"]])
     outf.write("\t".join([str(item) for item in outitems])+"\n")
 
-def worker(job_queue, out_queue):
+def worker(job_queue, out_queue, null_method, null_values_cpma, null_values_xqtl):
     # Keep looking for jobs to process. add results to out_queue
     while True:
         item = job_queue.get() # [snp, tstats, args.cpma, args.xqtl]
         if item == "DONE": break
-        results = RunSNP(*item[0:4])
+        results = RunSNP(*item[0:4], null_method, \
+            null_values_cpma, null_values_xqtl)
         out_queue.put([results, item[2], item[3]])
 
 def writer(out_queue, CPMA, XQTL, out):
@@ -110,19 +119,27 @@ def writer(out_queue, CPMA, XQTL, out):
         item = out_queue.get() # [results, CPMA, XQTL]
         if item == "DONE": break
         WriteSNP(item[0], outf, item[1], item[2])
-
     outf.close()
 
+NULLOPTIONS = ["chi2","eigen"]
 def main(args):
     if not os.path.exists(args.input):
         ERROR("Could not find %s"%args.input)
+    if args.null_method not in NULLOPTIONS:
+        ERROR("--null_method must be one of %s"%NULLOPTIONS)
+
+    ###### TODO get null disribution if empirical null #####
+    # How should we pass this around
+    null_values_cpma = [] # TODO??
+    null_values_xqtl = [] # TODO??
 
     # Set up job queue and processors
     # Note right now will use at least two processors
     # should possibly not do all this if threads==1
     job_queue = mp.Queue()
     out_queue = mp.Queue()
-    processes = [mp.Process(target=worker, args=(job_queue, out_queue)) \
+    processes = [mp.Process(target=worker, args=(job_queue, out_queue, \
+        args.null_method, null_values_cpma, null_values_xqtl)) \
         for i in range(np.max([args.threads-1, 1]))]
     writer_proc = mp.Process(target=writer, args=(out_queue, args.cpma, args.xqtl, args.out))
     for p in processes: p.start()
@@ -162,6 +179,8 @@ def getargs():
 #    run_group.add_argument("--eigendecomp", help="Run eigendecomposition method to adjust for gene correlation", action="store_true")
 #    run_group.add_argument("--snpermute", help="Run snp-permute method to adjust for gene correlation", action="store_true")
 #    run_group.add_argument("-s", "--seed", help="Seed for random generator", type=int, default=0 )    
+    run_group.add_argument("--null_method", help="How to get the null distribution for test stats" \
+            "Options: %s"%NULLOPTIONS, type=str, default="chi2")
     run_group.add_argument("--threads", help="Number of threads to use", type=int, default=1)
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--input", help="Matrix eQTL file. Must be sorted by SNP.", type=str, required=True)
