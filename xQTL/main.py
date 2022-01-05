@@ -140,17 +140,22 @@ def RunSNP(snp, tstats, CPMA=False, XQTL=False, \
             results["xQTL_p"] = GetPvalue(null_method, null_values_xqtl, test_stat)
     return results
 
-def WriteSNP(results, outf, CPMA=False, XQTL=False, null_sim=False):
+def WriteSNP(results, outf, CPMA=False, XQTL=False, null_sim=False, null_values_cpma=None, null_values_xqtl=None):
     outitems = [results["snp"]]
     if CPMA:
         outitems.extend([results["CPMA"]])
         if not null_sim:
             outitems.extend([results["CPMA_p"]])
+        # save null values in memory in addition to writing it to file
+        else:
+            null_values_cpma.append([results["CPMA"]])
     if XQTL:
         outitems.extend([results["xQTL"],results["predicted_T"], \
             results["predicted_L"]])
         if not null_sim:
             outitems.extend([results["xQTL_p"]])
+        else:
+            null_values_xqtl.append([results["xQTL"]])
     outf.write("\t".join([str(item) for item in outitems])+"\n")
 
 def worker(job_queue, out_queue, null_method, null_values_cpma, null_values_xqtl, null_sim):
@@ -162,7 +167,7 @@ def worker(job_queue, out_queue, null_method, null_values_cpma, null_values_xqtl
             null_values_cpma, null_values_xqtl, null_sim)
         out_queue.put([results, item[2], item[3]])
 
-def writer(out_queue, CPMA, XQTL, out, null_sim):
+def writer(out_queue, CPMA, XQTL, out, null_sim, null_values_cpma, null_values_xqtl):
     # Set up output file
     header = ["SNP"]
     if CPMA:
@@ -183,7 +188,7 @@ def writer(out_queue, CPMA, XQTL, out, null_sim):
     while True:
         item = out_queue.get() # [results, CPMA, XQTL]
         if item == "DONE": break
-        WriteSNP(item[0], outf, item[1], item[2], null_sim)
+        WriteSNP(item[0], outf, item[1], item[2], null_sim, null_values_cpma, null_values_xqtl)
     outf.close()
 
 NULLOPTIONS = ["chi2","eigen"]
@@ -193,45 +198,59 @@ def main(args):
     if args.null_method not in NULLOPTIONS:
         ERROR("--null_method must be one of %s"%NULLOPTIONS)
 
-    # if eigen method to get empirical null, set up job queue and processors to use in simulating null values
-    if args.null_method == 'eigen':
-        null_sim = True
-        job_queue = mp.Queue()
-        out_queue = mp.Queue()
-        processes = [mp.Process(target=worker, args=(job_queue, out_queue, \
-            args.null_method, None, None, null_sim)) \
-            for i in range(np.max([args.threads-1, 1]))]
-        writer_proc = mp.Process(target=writer, args=(out_queue, args.cpma, args.xqtl, args.out, null_sim))
-        for p in processes: p.start()
-        writer_proc.start()
-        
-        # get eigendecomposition and use job queue to simulate null values
-        mean_zscores, e_matrix = eigendecomposition(args.input)
-        simulate_null_values(mean_zscores, e_matrix, args.cpma, args.xqtl, job_queue, out_queue)
-        
-        for i in range(args.threads): job_queue.put("DONE")
-        for p in processes: p.join()
-        out_queue.put("DONE")
-        writer_proc.join() 
-        MSG("Finished getting empirical null")
-
     null_values_cpma = []
     null_values_xqtl = [] 
-    with open(f'{args.out}_null_sim.tab') as f:
-        header = f.readline()
-        header_items = header.split()
-        if args.cpma:
-            cpma_col = header_items.index("CPMA")
-        if args.xqtl:
-            xqtl_col = header_items.index("xQTL")
-        for line in f:
-            values = line.strip().split('\t')
-            if args.cpma:
-                null_values_cpma.append(float(values[cpma_col]))
-            if args.xqtl:
-                null_values_xqtl.append(float(values[xqtl_col]))
-    null_values_cpma.sort()
-    null_values_xqtl.sort()
+    # if eigen method to get empirical null, set up job queue and processors to use in simulating null values
+    if args.null_method == 'eigen':
+        # if user already has empirical null values file, read values from file
+        # else simulate null values and write to file
+        if os.path.exists(f'{args.out}_null_sim.tab'):
+            with open(f'{args.out}_null_sim.tab') as f:
+                MSG(f'Reading {args.out}_null_sim.tab for empirical null values')
+                header = f.readline()
+                header_items = header.split()
+                if args.cpma:
+                    #check if header items exist
+                    if "CPMA" in header_items:
+                        cpma_col = header_items.index("CPMA")
+                    else:
+                        ERROR(f"CPMA column does not exist in input {args.out}_null_sim.tab")                   
+                if args.xqtl:
+                    if "xQTL" in header_items:
+                        xqtl_col = header_items.index("xQTL")
+                    else:
+                        ERROR(f"xQTL column does not exist in input {args.out}_null_sim.tab")                   
+                for line in f:
+                    values = line.strip().split('\t')
+                    if args.cpma:
+                        null_values_cpma.append(float(values[cpma_col]))
+                    if args.xqtl:
+                        null_values_xqtl.append(float(values[xqtl_col]))
+        else: 
+            # use job queues for null_sim
+            null_sim = True
+            job_queue = mp.Queue()
+            out_queue = mp.Queue()
+            processes = [mp.Process(target=worker, args=(job_queue, out_queue, \
+                args.null_method, None, None, null_sim)) \
+                for i in range(np.max([args.threads-1, 1]))]
+            writer_proc = mp.Process(target=writer, args=(out_queue, args.cpma, \
+                args.xqtl, args.out, null_sim, null_values_cpma, null_values_xqtl))
+            for p in processes: p.start()
+            writer_proc.start()
+            
+            # get eigendecomposition and use job queue to simulate null values
+            mean_zscores, e_matrix = eigendecomposition(args.input)
+            simulate_null_values(mean_zscores, e_matrix, args.cpma, args.xqtl, job_queue, out_queue)
+            
+            for i in range(args.threads): job_queue.put("DONE")
+            for p in processes: p.join()
+            out_queue.put("DONE")
+            writer_proc.join() 
+            MSG("Finished getting empirical null")
+
+        null_values_cpma.sort()
+        null_values_xqtl.sort()
 
     # Set up job queue and processors
     # Note right now will use at least two processors
@@ -242,7 +261,7 @@ def main(args):
     processes = [mp.Process(target=worker, args=(job_queue, out_queue, \
         args.null_method, null_values_cpma, null_values_xqtl, null_sim)) \
         for i in range(np.max([args.threads-1, 1]))]
-    writer_proc = mp.Process(target=writer, args=(out_queue, args.cpma, args.xqtl, args.out, null_sim))
+    writer_proc = mp.Process(target=writer, args=(out_queue, args.cpma, args.xqtl, args.out, null_sim, None, None))
     for p in processes: p.start()
     writer_proc.start()
 
