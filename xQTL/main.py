@@ -37,14 +37,18 @@ def eigendecomposition(sumstats):
     genes = list(zscores.columns)
     scores = np.transpose(np.array(zscores))
     zscores = ''
+    print('getting cov')
     cov = np.cov(scores)
+    print('finished cov')
     # get mean zscores
     mean_zscores = []
     for i in scores:
         mean_zscores.append(np.mean(i))
     mean_zscores = np.array(mean_zscores)
     # perform eigendecomposition
+    print('starting eigh')
     e_values, Q = LA.eigh(cov)
+    print('finished eigh')
     e_values = e_values.real
     e_values[e_values < 0] = 0
     Q = Q.real
@@ -78,6 +82,7 @@ def simulate_null_values(mean_zscores, e_matrix, cpma, xqtl, job_queue, writer_q
             index += 1
 
 def calculate_cpma(pvalues):
+    pvalues = np.where(pvalues > 10**(-150), pvalues, 10**(-150))
     num_genes = len(pvalues)
     likelihood = 1/(np.mean(np.negative(np.log(pvalues))))
     value = -2 * ((((likelihood - 1) * num_genes)/likelihood) - num_genes*np.log(likelihood))
@@ -272,8 +277,12 @@ def main(args):
         header_items = header.split()
         snp_col = header_items.index("SNP")
         tstat_col = header_items.index("t-stat")
-        snp = ''
         tstats = []
+        # read the first snp and append the first tstat value
+        firstsnp = f.readline()
+        values = firstsnp.strip().split('\t')
+        snp = values[snp_col]
+        tstats.append(float(values[tstat_col]))
         for line in f:
             values = line.strip().split('\t')
             cur_snp = values[snp_col]
@@ -281,6 +290,7 @@ def main(args):
                 tstats.append(float(values[tstat_col]))
             elif snp:
                 job_queue.put([snp, tstats, args.cpma, args.xqtl])
+                tstats = []
             snp = cur_snp
         # Make sure final SNP gets run
         if snp:
