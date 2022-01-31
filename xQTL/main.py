@@ -8,10 +8,12 @@ xQTL-run --input ../trans-eQTL/test/sim-0/matrixEQTL.out.gz --out test --cpma --
 """
 
 import argparse
+import warnings
 import numpy as np
 import os
 import gzip
 import pandas as pd
+import pathlib
 import math
 from scipy import stats, linalg as LA
 import scipy.optimize
@@ -32,23 +34,22 @@ def eigendecomposition(sumstats):
     MSG("Starting eigendecomposition null method")
     data = pd.read_csv(sumstats, sep='\t')
     zscores = data.pivot_table(index='SNP', columns='gene', values='t-stat')
+    num_snps = len(zscores.index)
+    if num_snps < 2:
+        ERROR("Input file has less than 2 snps, not enough for eigendecomposition null method")
     data = ''
     # get cov
     genes = list(zscores.columns)
     scores = np.transpose(np.array(zscores))
     zscores = ''
-    print('getting cov')
     cov = np.cov(scores)
-    print('finished cov')
     # get mean zscores
     mean_zscores = []
     for i in scores:
         mean_zscores.append(np.mean(i))
     mean_zscores = np.array(mean_zscores)
     # perform eigendecomposition
-    print('starting eigh')
     e_values, Q = LA.eigh(cov)
-    print('finished eigh')
     e_values = e_values.real
     e_values[e_values < 0] = 0
     Q = Q.real
@@ -73,7 +74,6 @@ def simulate_null_values(mean_zscores, e_matrix, cpma, xqtl, job_queue, writer_q
     for i in range(iterations):
         cur_n = min(30000, sim_undone)
         sim_undone = sim_undone - cur_n
-        MSG(f"Null value simulation #{num_sim-sim_undone}")
         z=np.random.normal(0, 1, (n_genes, cur_n))
         mzscores_tile = np.transpose(np.tile(mean_zscores, (cur_n, 1)))
         sim_zscores = mzscores_tile + np.dot(e_matrix, z)
@@ -86,8 +86,6 @@ def calculate_cpma(pvalues):
     num_genes = len(pvalues)
     likelihood = 1/(np.mean(np.negative(np.log(pvalues))))
     value = -2 * ((((likelihood - 1) * num_genes)/likelihood) - num_genes*np.log(likelihood))
-    if math.isnan(value):
-        value = 0
     return value
 
 def calculate_xqtl(pvalues):
@@ -107,7 +105,7 @@ def likelihood_ratio_test(pvals, trueT=None, trueL=None):
         results = scipy.optimize.minimize(lambda tL: log_likelihood_neg(*tL, pvals=pvals),
                                            method='L-BFGS-B',
                                            x0=(0.5, 1),
-                                           bounds=((10**(-5), 1),(10**(-5), None)))
+                                           bounds=((10**(-5), 1-10**(-5)),(10**(-5), None)))
         alt_lklh = results['fun']
         x = results['x']
         bestT, bestL = x[0], x[1]
@@ -146,7 +144,10 @@ def RunSNP(snp, tstats, CPMA=False, XQTL=False, \
     return results
 
 def WriteSNP(results, outf, CPMA=False, XQTL=False, null_sim=False, null_values_cpma=None, null_values_xqtl=None):
-    outitems = [results["snp"]]
+    if not null_sim:
+        outitems = [results["snp"]]
+    else:
+        outitems = []
     if CPMA:
         outitems.extend([results["CPMA"]])
         if not null_sim:
@@ -155,10 +156,9 @@ def WriteSNP(results, outf, CPMA=False, XQTL=False, null_sim=False, null_values_
         else:
             null_values_cpma.append([results["CPMA"]])
     if XQTL:
-        outitems.extend([results["xQTL"],results["predicted_T"], \
-            results["predicted_L"]])
+        outitems.extend([results["xQTL"]])
         if not null_sim:
-            outitems.extend([results["xQTL_p"]])
+            outitems.extend([results["predicted_T"], results["predicted_L"], results["xQTL_p"]])
         else:
             null_values_xqtl.append([results["xQTL"]])
     outf.write("\t".join([str(item) for item in outitems])+"\n")
@@ -174,25 +174,37 @@ def worker(job_queue, out_queue, null_method, null_values_cpma, null_values_xqtl
 
 def writer(out_queue, CPMA, XQTL, out, null_sim, null_values_cpma, null_values_xqtl):
     # Set up output file
-    header = ["SNP"]
+    if not null_sim:
+        header = ["SNP"]
+    else:
+        header = []
     if CPMA:
         header.extend(["CPMA"])
         if not null_sim:
             header.extend(["CPMA_p"])
     if XQTL:
-        header.extend(["xQTL","predicted_T","predicted_L"])
+        header.extend(["xQTL"])
         if not null_sim:
-            header.extend(["xQTL_p"])
+            header.extend(["predicted_T","predicted_L","xQTL_p"])
     if not null_sim:
-        outf = open(f'{out}.tab', "w")
+        outf = open(f'{out}/results.tab', "w")
     else:
-        outf = open(f'{out}_null_sim.tab', "w")
+        outf = open(f'{out}/null_sim.tab', "w")
     outf.write("\t".join(header)+"\n")
-
+    
+    counter = 0
     # Keep looking for output jobs from the queue
     while True:
+        counter += 1
+        if (counter % 50000 == 0) and null_sim:
+            MSG(f"Null value simulation #{counter}")
+        if (counter % 1000 == 0) and not null_sim:
+            MSG(f"Finished {counter} SNPs")
         item = out_queue.get() # [results, CPMA, XQTL]
-        if item == "DONE": break
+        if item == "DONE":
+            if not null_sim:
+                MSG(f"Finished {counter-1} SNPs")
+            break
         WriteSNP(item[0], outf, item[1], item[2], null_sim, null_values_cpma, null_values_xqtl)
     outf.close()
 
@@ -202,6 +214,10 @@ def main(args):
         ERROR("Could not find %s"%args.input)
     if args.null_method not in NULLOPTIONS:
         ERROR("--null_method must be one of %s"%NULLOPTIONS)
+    
+    # Set up output directory
+    if not os.path.exists(args.out):
+        os.mkdir(args.out)
 
     null_values_cpma = []
     null_values_xqtl = [] 
@@ -209,9 +225,11 @@ def main(args):
     if args.null_method == 'eigen':
         # if user already has empirical null values file, read values from file
         # else simulate null values and write to file
-        if os.path.exists(f'{args.out}_null_sim.tab'):
-            with open(f'{args.out}_null_sim.tab') as f:
-                MSG(f'Reading {args.out}_null_sim.tab for empirical null values')
+        if args.precomputed_null:
+        #if os.path.exists(f'{args.out}_null_sim.tab'):
+            with open(f'{args.precomputed_null}') as f:
+                MSG(f'Reading precomputed file for empirical null values')
+                #MSG(f'Reading {args.out}_null_sim.tab for empirical null values')
                 header = f.readline()
                 header_items = header.split()
                 if args.cpma:
@@ -219,20 +237,22 @@ def main(args):
                     if "CPMA" in header_items:
                         cpma_col = header_items.index("CPMA")
                     else:
-                        ERROR(f"CPMA column does not exist in input {args.out}_null_sim.tab")                   
+                        ERROR(f"CPMA column does not exist in input {args.precomputed_null}")                   
                 if args.xqtl:
                     if "xQTL" in header_items:
                         xqtl_col = header_items.index("xQTL")
                     else:
-                        ERROR(f"xQTL column does not exist in input {args.out}_null_sim.tab")                   
+                        ERROR(f"xQTL column does not exist in input {args.precomputed_null}")                   
                 for line in f:
                     values = line.strip().split('\t')
                     if args.cpma:
                         null_values_cpma.append(float(values[cpma_col]))
                     if args.xqtl:
                         null_values_xqtl.append(float(values[xqtl_col]))
-        else: 
-            # use job queues for null_sim
+        else:
+            # get eigendecomposition
+            np.random.seed(args.seed)
+            mean_zscores, e_matrix = eigendecomposition(args.input)
             null_sim = True
             job_queue = mp.Queue()
             out_queue = mp.Queue()
@@ -244,8 +264,7 @@ def main(args):
             for p in processes: p.start()
             writer_proc.start()
             
-            # get eigendecomposition and use job queue to simulate null values
-            mean_zscores, e_matrix = eigendecomposition(args.input)
+            # use job queue to simulate null values
             simulate_null_values(mean_zscores, e_matrix, args.cpma, args.xqtl, job_queue, out_queue)
             
             for i in range(args.threads): job_queue.put("DONE")
@@ -257,26 +276,29 @@ def main(args):
         null_values_cpma.sort()
         null_values_xqtl.sort()
 
-    # Set up job queue and processors
-    # Note right now will use at least two processors
-    # should possibly not do all this if threads==1
-    null_sim = False
-    job_queue = mp.Queue()
-    out_queue = mp.Queue()
-    processes = [mp.Process(target=worker, args=(job_queue, out_queue, \
-        args.null_method, null_values_cpma, null_values_xqtl, null_sim)) \
-        for i in range(np.max([args.threads-1, 1]))]
-    writer_proc = mp.Process(target=writer, args=(out_queue, args.cpma, args.xqtl, args.out, null_sim, None, None))
-    for p in processes: p.start()
-    writer_proc.start()
-
     MSG("Starting to read user input")
     # TODO add check for SNP sorted
-    with gzip.open(args.input,'rt') as f:
+    input_fn = pathlib.Path(args.input)
+    open_method = gzip.open if input_fn.suffix == '.gz' else open
+    with open_method(input_fn,'rt') as f:
         header = f.readline() # SNP gene    beta    t-stat  p-value FDR
         header_items = header.split()
+        if not all(col in header_items for col in ["SNP", "gene", "t-stat"]): 
+            ERROR(f"Required columns do not exist in input {args.input}")                   
         snp_col = header_items.index("SNP")
         tstat_col = header_items.index("t-stat")
+        # Set up job queue and processors
+        # Note right now will use at least two processors
+        # should possibly not do all this if threads==1
+        null_sim = False
+        job_queue = mp.Queue()
+        out_queue = mp.Queue()
+        processes = [mp.Process(target=worker, args=(job_queue, out_queue, \
+            args.null_method, null_values_cpma, null_values_xqtl, null_sim)) \
+            for i in range(np.max([args.threads-1, 1]))]
+        writer_proc = mp.Process(target=writer, args=(out_queue, args.cpma, args.xqtl, args.out, null_sim, None, None))
+        for p in processes: p.start()
+        writer_proc.start()
         tstats = []
         # read the first snp and append the first tstat value
         firstsnp = f.readline()
@@ -307,11 +329,11 @@ def getargs():
     run_group = parser.add_argument_group("xQTL run parameters")
     run_group.add_argument("--xqtl", help="Run x-QTL", action="store_true")
     run_group.add_argument("--cpma", help="Run CPMA", action="store_true")
-#    run_group.add_argument("--eigendecomp", help="Run eigendecomposition method to adjust for gene correlation", action="store_true")
-#    run_group.add_argument("--snpermute", help="Run snp-permute method to adjust for gene correlation", action="store_true")
-#    run_group.add_argument("-s", "--seed", help="Seed for random generator", type=int, default=0 )    
+    run_group.add_argument("-s", "--seed", help="Seed for random generator", type=int, default=0 )    
     run_group.add_argument("--null_method", help="How to get the null distribution for test stats" \
             "Options: %s"%NULLOPTIONS, type=str, default="chi2")
+    run_group.add_argument("--precomputed_null", help="Precomputed file with null values for test stats", \
+            type=str)
     run_group.add_argument("--threads", help="Number of threads to use", type=int, default=1)
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--input", help="Matrix eQTL file. Must be sorted by SNP.", type=str, required=True)
