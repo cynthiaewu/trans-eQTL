@@ -61,7 +61,7 @@ def eigendecomposition(sumstats):
     MSG("Finished eigendecomposition")
     return mean_zscores, e_matrix
 
-def simulate_null_values(mean_zscores, e_matrix, cpma, xqtl, job_queue, writer_queue):
+def simulate_null_values(mean_zscores, e_matrix, cpma, xqtl, grid, job_queue, writer_queue):
     MSG("Starting simulation of null values")
     n_genes = len(mean_zscores)
     # simulate 500000 null values
@@ -78,7 +78,7 @@ def simulate_null_values(mean_zscores, e_matrix, cpma, xqtl, job_queue, writer_q
         mzscores_tile = np.transpose(np.tile(mean_zscores, (cur_n, 1)))
         sim_zscores = mzscores_tile + np.dot(e_matrix, z)
         for sim in np.transpose(sim_zscores):
-            job_queue.put([f'snp_{index}', sim, cpma, xqtl])
+            job_queue.put([f'snp_{index}', sim, cpma, xqtl, grid])
             index += 1
 
 def calculate_cpma(pvalues):
@@ -88,21 +88,40 @@ def calculate_cpma(pvalues):
     value = -2 * ((((likelihood - 1) * num_genes)/likelihood) - num_genes*np.log(likelihood))
     return value
 
-def calculate_xqtl(pvalues):
+def calculate_xqtl(pvalues, grid):
     pvalues = np.where(pvalues > 10**(-150), pvalues, 10**(-150))
     values = -np.log(pvalues)
-    test_stat, best_T, best_L = likelihood_ratio_test(values)
+    test_stat, best_T, best_L = likelihood_ratio_test(values, grid)
     return test_stat, best_T, best_L
 
 def log_likelihood_neg(t, L, pvals):
     pvals = np.array(pvals)
     return -np.sum(np.log((1 - t) * np.exp(-pvals) + t * 1/L * np.exp(-1/L*pvals)))
 
-def likelihood_ratio_test(pvals, trueT=None, trueL=None):
+def grid_scipy(pvals,
+            nt=5, min_t=0.01, max_t=0.99,
+            nL=5, min_L=0.1, max_L=100):
+    ts = np.linspace(min_t, max_t, nt)
+    Ls = np.linspace(min_L, max_L, nL)
+    best_f = {'fun': np.inf}
+    for t0 in ts:
+        for L0 in Ls:
+            res = scipy.optimize.minimize(lambda tL: log_likelihood_neg(*tL, pvals=pvals),
+                        method='L-BFGS-B',
+                        x0=(t0, L0),
+                        bounds=((10**(-5), 1-10**(-5)),(10**(-5), None)))
+            if (res['fun'] < best_f['fun']):
+                best_f = res
+    return best_f
+
+def likelihood_ratio_test(pvals, grid, trueT=None, trueL=None):
     assert (trueT is None) == (trueL is None)
     null_lklh = log_likelihood_neg(0, 1, pvals)
     if trueT is None:
-        results = scipy.optimize.minimize(lambda tL: log_likelihood_neg(*tL, pvals=pvals),
+        if grid:
+            results = grid_scipy(pvals)
+        else:
+            results = scipy.optimize.minimize(lambda tL: log_likelihood_neg(*tL, pvals=pvals),
                                            method='L-BFGS-B',
                                            x0=(0.5, 1),
                                            bounds=((10**(-5), 1-10**(-5)),(10**(-5), None)))
@@ -124,7 +143,7 @@ def GetPvalue(null_method, null_values, test_stat):
         pval = (index + 1)/(n_iter+1)
     return pval
 
-def RunSNP(snp, tstats, CPMA=False, XQTL=False, \
+def RunSNP(snp, tstats, CPMA=False, XQTL=False, grid=False,\
         null_method="chi2", null_values_cpma=None, null_values_xqtl=None, null_sim=False):
     results = {}
     results["snp"] = snp
@@ -135,7 +154,7 @@ def RunSNP(snp, tstats, CPMA=False, XQTL=False, \
         if not null_sim:
             results["CPMA_p"] = GetPvalue(null_method, null_values_cpma, cpma)
     if XQTL:
-        test_stat, best_T, best_L = calculate_xqtl(pvalues)
+        test_stat, best_T, best_L = calculate_xqtl(pvalues, grid)
         results["xQTL"] = test_stat
         results["predicted_T"] = best_T
         results["predicted_L"] = best_L
@@ -168,7 +187,7 @@ def worker(job_queue, out_queue, null_method, null_values_cpma, null_values_xqtl
     while True:
         item = job_queue.get() # [snp, tstats, args.cpma, args.xqtl]
         if item == "DONE": break
-        results = RunSNP(*item[0:4], null_method, \
+        results = RunSNP(*item[0:5], null_method, \
             null_values_cpma, null_values_xqtl, null_sim)
         out_queue.put([results, item[2], item[3]])
 
@@ -265,7 +284,7 @@ def main(args):
             writer_proc.start()
             
             # use job queue to simulate null values
-            simulate_null_values(mean_zscores, e_matrix, args.cpma, args.xqtl, job_queue, out_queue)
+            simulate_null_values(mean_zscores, e_matrix, args.cpma, args.xqtl, args.grid, job_queue, out_queue)
             
             for i in range(args.threads): job_queue.put("DONE")
             for p in processes: p.join()
@@ -311,12 +330,12 @@ def main(args):
             if snp == cur_snp: 
                 tstats.append(float(values[tstat_col]))
             elif snp:
-                job_queue.put([snp, tstats, args.cpma, args.xqtl])
+                job_queue.put([snp, tstats, args.cpma, args.xqtl, args.grid])
                 tstats = []
             snp = cur_snp
         # Make sure final SNP gets run
         if snp:
-            job_queue.put([snp, tstats, args.cpma, args.xqtl])
+            job_queue.put([snp, tstats, args.cpma, args.xqtl, args.grid])
     for i in range(args.threads): job_queue.put("DONE")
     for p in processes: p.join()
     out_queue.put("DONE")
@@ -328,6 +347,7 @@ def getargs():
     parser = argparse.ArgumentParser(__doc__)
     run_group = parser.add_argument_group("xQTL run parameters")
     run_group.add_argument("--xqtl", help="Run x-QTL", action="store_true")
+    run_group.add_argument("--grid", help="Run x-QTL with a grid search for t target genes", action="store_true")
     run_group.add_argument("--cpma", help="Run CPMA", action="store_true")
     run_group.add_argument("-s", "--seed", help="Seed for random generator", type=int, default=0 )    
     run_group.add_argument("--null_method", help="How to get the null distribution for test stats" \
