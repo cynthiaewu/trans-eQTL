@@ -34,130 +34,130 @@ DEFAULT_BETA_SD = 0
 ###########
 
 def ERROR(msg):
-	sys.stderr.write("[ERROR]: " + msg.strip() + "\n")
-	sys.exit(1)
+    sys.stderr.write("[ERROR]: " + msg.strip() + "\n")
+    sys.exit(1)
 
 def MSG(msg):
-	sys.stderr.write("[PROGRESS]: " + msg.strip() + "\n")
+    sys.stderr.write("[PROGRESS]: " + msg.strip() + "\n")
 
 class ExprSimulator:
-	def __init__(self, cov="identity", num_genes=DEFAULT_NUM_GENES, \
-				num_samples=DEFAULT_NUM_SAMPLES, \
-				num_snps=DEFAULT_NUM_SNPS, \
-				num_nullsnps=DEFAULT_NUM_NULLSNPS, \
-				num_peer=DEFAULT_NUM_PEER, \
-				maf=DEFAULT_MAF, \
-				num_targets=DEFAULT_NUM_TARGETS, \
-				beta=DEFAULT_BETA, \
-				beta_sd=DEFAULT_BETA_SD):
-		self.cov = cov
-		self.num_genes = num_genes
-		self.num_samples = num_samples
-		self.num_snps = num_snps
-		self.num_nullsnps = num_nullsnps
-		self.num_peer = num_peer
-		self.maf = maf
-		self.num_targets = num_targets
-		self.beta = beta
-		self.beta_sd = beta_sd
+    def __init__(self, cov="identity", num_genes=DEFAULT_NUM_GENES, \
+                num_samples=DEFAULT_NUM_SAMPLES, \
+                num_snps=DEFAULT_NUM_SNPS, \
+                num_nullsnps=DEFAULT_NUM_NULLSNPS, \
+                num_peer=DEFAULT_NUM_PEER, \
+                maf=DEFAULT_MAF, \
+                num_targets=DEFAULT_NUM_TARGETS, \
+                beta=DEFAULT_BETA, \
+                beta_sd=DEFAULT_BETA_SD):
+        self.cov = cov
+        self.num_genes = num_genes
+        self.num_samples = num_samples
+        self.num_snps = num_snps
+        self.num_nullsnps = num_nullsnps
+        self.num_peer = num_peer
+        self.maf = maf
+        self.num_targets = num_targets
+        self.beta = beta
+        self.beta_sd = beta_sd
 
-	def Simulate(self, output_folder):
-		# Get noise (numsamp x numgene matrix)
-		noise = self.generate_noise()
+    def Simulate(self, output_folder):
+        # Get noise (numsamp x numgene matrix)
+        noise = self.generate_noise()
 
-		# Get genotypes
-		X = self.generate_genotypes()
+        # Get genotypes
+        X = self.generate_genotypes()
 
-		# Get PEER
-		peer = self.generate_peer()
+        # Get PEER
+        peer = self.generate_peer()
 
-		# Get matrix of effect sizes
-		betas = self.generate_effects()
+        # Get matrix of effect sizes
+        betas = self.generate_effects()
 
-		# Get genetic effect. Assume effects of
-		# each SNP are additive and independent
-		sum_X = 0
-		for i in range(self.num_snps):
-			sum_X += (np.outer(betas[i], X[i]))
+        # Get genetic effect. Assume effects of
+        # each SNP are additive and independent
+        sum_X = 0
+        for i in range(self.num_snps):
+            sum_X += (np.outer(betas[i], X[i]))
  
-		# Put it together in one model
-		Y = sum_X + peer + np.array(noise).T
+        # Put it together in one model
+        Y = sum_X + peer + np.array(noise).T
 
-		# Write to a file
-		self.write_sim(X, Y, betas, output_folder)
+        # Write to a file
+        self.write_sim(X, Y, betas, output_folder)
 
-	def generate_noise(self):
-		if self.cov == "identity":
-			return np.random.normal(0, 1, (self.num_samples, self.num_genes))
-		else: 
-			return np.random.multivariate_normal(np.zeros(self.num_genes), \
-        	self.cov, size=self.num_samples)
+    def generate_noise(self):
+        if isinstance(self.cov, str) and self.cov == "identity":
+            return np.random.normal(0, 1, (self.num_samples, self.num_genes))
+        else: 
+            return np.random.multivariate_normal(np.zeros(self.num_genes), \
+            self.cov, size=self.num_samples)
 
-	def generate_effects(self):
-		num_total_snps = self.num_snps+self.num_nullsnps
-		betas = np.zeros((num_total_snps, self.num_genes))
-		for i in range(self.num_snps):
-			for j in range(self.num_targets):
-				betas[i,j] = np.random.normal(self.beta, self.beta_sd)
-		return betas
+    def generate_effects(self):
+        num_total_snps = self.num_snps+self.num_nullsnps
+        betas = np.zeros((num_total_snps, self.num_genes))
+        for i in range(self.num_snps):
+            for j in range(self.num_targets):
+                betas[i,j] = np.random.normal(self.beta, self.beta_sd)
+        return betas
 
-	def write_sim(self, X, Y, betas, output_folder):
-		# Write genotypes
-		outx = open(os.path.join(output_folder, "genotypes.csv"), "w")
-		header = ["SNP"] + ["Sample%s"%i for i in range(self.num_samples)]
-		outx.write(",".join(header)+"\n")
-		for i in range(self.num_snps):
-			outitems = ["SNP%s"%i]
-			for j in range(self.num_samples):
-				outitems.append(str(X[i, j]))
-			outx.write(",".join(outitems)+"\n")
-		outx.close()
+    def write_sim(self, X, Y, betas, output_folder):
+        # Write genotypes
+        outx = open(os.path.join(output_folder, "genotypes.csv"), "w")
+        header = ["SNP"] + ["Sample%s"%i for i in range(self.num_samples)]
+        outx.write(",".join(header)+"\n")
+        for i in range(self.num_snps):
+            outitems = ["SNP%s"%i]
+            for j in range(self.num_samples):
+                outitems.append(str(X[i, j]))
+            outx.write(",".join(outitems)+"\n")
+        outx.close()
 
-		# Write phenotypes
-		outy = open(os.path.join(output_folder, "expression.csv"), "w")
-		header = ["Gene"] + ["Sample%s"%i for i in range(self.num_samples)]
-		outy.write(",".join(header)+"\n")
-		for i in range(self.num_genes):
-			outitems = ["Gene%s"%i]
-			for j in range(self.num_samples):
-				outitems.append(str(Y[i,j]))
-			outy.write(",".join(outitems)+"\n")
-		outy.close()
+        # Write phenotypes
+        outy = open(os.path.join(output_folder, "expression.csv"), "w")
+        header = ["Gene"] + ["Sample%s"%i for i in range(self.num_samples)]
+        outy.write(",".join(header)+"\n")
+        for i in range(self.num_genes):
+            outitems = ["Gene%s"%i]
+            for j in range(self.num_samples):
+                outitems.append(str(Y[i,j]))
+            outy.write(",".join(outitems)+"\n")
+        outy.close()
 
-		# Write betas
-		outb = open(os.path.join(output_folder, "betas.csv"), "w")
-		header = ["SNP"] + ["Gene%s"%i for i in range(self.num_genes)]
-		outb.write(",".join(header)+"\n")
-		for i in range(self.num_snps+self.num_nullsnps):
-			outitems = ["SNP%s"%i]
-			for j in range(self.num_genes):
-				outitems.append(str(betas[i,j]))
-			outb.write(",".join(outitems)+"\n")
-		outb.close()
+        # Write betas
+        outb = open(os.path.join(output_folder, "betas.csv"), "w")
+        header = ["SNP"] + ["Gene%s"%i for i in range(self.num_genes)]
+        outb.write(",".join(header)+"\n")
+        for i in range(self.num_snps+self.num_nullsnps):
+            outitems = ["SNP%s"%i]
+            for j in range(self.num_genes):
+                outitems.append(str(betas[i,j]))
+            outb.write(",".join(outitems)+"\n")
+        outb.close()
 
-	def generate_genotypes(self):
-		genotype = []
-		for i in range(self.num_snps+self.num_nullsnps):
-			allele1 = bernoulli.rvs(self.maf, size=self.num_samples)
-			allele2 = bernoulli.rvs(self.maf, size=self.num_samples)
-			genotype.append(allele1 + allele2)
-		return np.array(genotype)
+    def generate_genotypes(self):
+        genotype = []
+        for i in range(self.num_snps+self.num_nullsnps):
+            allele1 = bernoulli.rvs(self.maf, size=self.num_samples)
+            allele2 = bernoulli.rvs(self.maf, size=self.num_samples)
+            genotype.append(allele1 + allele2)
+        return np.array(genotype)
 
-	def generate_peer(self):
-		factor_level = np.random.normal(0, 0.6, (self.num_samples, self.num_peer))
-		factor_weight = []
-		for i in range(self.num_peer):
-			var_k = 0.8*((np.random.gamma(2.5, 0.6))**2)
-			factor_weight.append(np.random.normal(0, var_k, self.num_genes))
-		factor_weight = np.array(factor_weight)
-		peer = np.dot(factor_level, factor_weight).T
-		return peer
+    def generate_peer(self):
+        factor_level = np.random.normal(0, 0.6, (self.num_samples, self.num_peer))
+        factor_weight = []
+        for i in range(self.num_peer):
+            var_k = 0.8*((np.random.gamma(2.5, 0.6))**2)
+            factor_weight.append(np.random.normal(0, var_k, self.num_genes))
+        factor_weight = np.array(factor_weight)
+        peer = np.dot(factor_level, factor_weight).T
+        return peer
 
 def RunMatrixEQTL(output_folder):
-	genotype = os.path.join(output_folder, "genotypes.csv")
-	expression = os.path.join(output_folder, "expression.csv")
-	eqtl_file = os.path.join(output_folder, "matrixEQTL.out")
-	cmd = '''
+    genotype = os.path.join(output_folder, "genotypes.csv")
+    expression = os.path.join(output_folder, "expression.csv")
+    eqtl_file = os.path.join(output_folder, "matrixEQTL.out")
+    cmd = '''
 library(MatrixEQTL);
 useModel = modelLINEAR;
 pvOutputThreshold = 1;
@@ -186,54 +186,54 @@ me = Matrix_eQTL_engine(
   pvalue.hist = TRUE,
   min.pv.by.genesnp = FALSE,
   noFDRsaveMemory = FALSE);
-		'''%(genotype, expression, eqtl_file)
-	robjects.r(cmd)
+        '''%(genotype, expression, eqtl_file)
+    robjects.r(cmd)
 
 def WriteConfig(cmd, args, outfile):
-	outf = open(outfile, "w")
-	outf.write("command,%s\n"%(cmd))
-	for arg in vars(args):
-		outf.write("%s,%s\n"%(arg, getattr(args, arg)))
-	outf.close()
+    outf = open(outfile, "w")
+    outf.write("command,%s\n"%(cmd))
+    for arg in vars(args):
+        outf.write("%s,%s\n"%(arg, getattr(args, arg)))
+    outf.close()
 
 def main(args):
-	np.random.seed(args.seed)
+    np.random.seed(args.seed)
 
-	# Set up covariance matrix
-	if args.gxg_corr is None:
-		cov = "identity"
-	else:
-		if not os.path.exists(args.gxg_corr):
-			ERROR("Could not find file %s"%args.gxg_corr)
-		cov = np.loadtxt(args.gxg_corr)
+    # Set up covariance matrix
+    if args.gxg_corr is None:
+        cov = "identity"
+    else:
+        if not os.path.exists(args.gxg_corr):
+            ERROR("Could not find file %s"%args.gxg_corr)
+        cov = np.loadtxt(args.gxg_corr)
 
-	# Set up output directory
-	if not os.path.exists(args.out):
-		os.mkdir(args.out)
+    # Set up output directory
+    if not os.path.exists(args.out):
+        os.mkdir(args.out)
 
-	simulator = ExprSimulator(cov=cov, \
-		num_genes=args.num_genes, \
-		num_samples=args.num_samples, \
-		num_snps=args.num_snps, \
-		num_nullsnps=args.num_nullsnps, \
-		num_peer=args.num_peer, \
-		maf=args.maf, \
-		num_targets=args.num_targets, \
-		beta=args.beta, \
-		beta_sd=args.beta_sd)
+    simulator = ExprSimulator(cov=cov, \
+        num_genes=args.num_genes, \
+        num_samples=args.num_samples, \
+        num_snps=args.num_snps, \
+        num_nullsnps=args.num_nullsnps, \
+        num_peer=args.num_peer, \
+        maf=args.maf, \
+        num_targets=args.num_targets, \
+        beta=args.beta, \
+        beta_sd=args.beta_sd)
 
-	for numsim in range(args.num_sim):
-		MSG("Running simulation %s"%numsim)
-		output_folder = os.path.join(args.out, "sim-%s"%numsim)
-		if not os.path.exists (output_folder):
-			os.mkdir(output_folder)
-		simulator.Simulate(output_folder)
-		WriteConfig(" ".join(sys.argv), args, os.path.join(output_folder, "config.csv"))
-		if args.run_matrix_eqtl:
-			RunMatrixEQTL(output_folder)
+    for numsim in range(args.num_sim):
+        MSG("Running simulation %s"%numsim)
+        output_folder = os.path.join(args.out, "sim-%s"%numsim)
+        if not os.path.exists (output_folder):
+            os.mkdir(output_folder)
+        simulator.Simulate(output_folder)
+        WriteConfig(" ".join(sys.argv), args, os.path.join(output_folder, "config.csv"))
+        if args.run_matrix_eqtl:
+            RunMatrixEQTL(output_folder)
 
-	MSG("Done!")
-	return 0
+    MSG("Done!")
+    return 0
 
 def getargs(): 
     parser = argparse.ArgumentParser(__doc__)
