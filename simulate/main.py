@@ -99,6 +99,7 @@ class ExprSimulator:
         for i in range(self.num_snps):
             for j in range(self.num_targets):
                 betas[i,j] = np.random.normal(self.beta, self.beta_sd)
+            np.random.shuffle(betas[i])
         return betas
 
     def write_sim(self, X, Y, betas, output_folder):
@@ -106,7 +107,7 @@ class ExprSimulator:
         outx = open(os.path.join(output_folder, "genotypes.csv"), "w")
         header = ["SNP"] + ["Sample%s"%i for i in range(self.num_samples)]
         outx.write(",".join(header)+"\n")
-        for i in range(self.num_snps):
+        for i in range(self.num_snps+self.num_nullsnps):
             outitems = ["SNP%s"%i]
             for j in range(self.num_samples):
                 outitems.append(str(X[i, j]))
