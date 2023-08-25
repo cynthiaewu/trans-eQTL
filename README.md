@@ -1,6 +1,5 @@
-# trans-eQTL
+# xQTL
 
-** Under construction **
 
 This repository contains the following utilities for simulating expression datasets and running various methods for trans-eQTL detection:
 
