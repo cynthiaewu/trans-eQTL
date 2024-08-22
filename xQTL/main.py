@@ -94,9 +94,10 @@ def calculate_xqtl(pvalues, grid):
     test_stat, best_T, best_L = likelihood_ratio_test(values, grid)
     return test_stat, best_T, best_L
 
-def log_likelihood_neg(t, L, pvals):
+def log_likelihood_neg(t, L, pvals, C=1):
     pvals = np.array(pvals)
-    return -np.sum(np.log((1 - t) * np.exp(-pvals) + t * 1/L * np.exp(-1/L*pvals)))
+    return -np.sum(np.log((1 - t) * np.exp(-pvals) + t * 1/L * np.exp(-1/L*pvals)))-C*np.log(4*t*(1-t))
+    #return -np.sum(np.log((1 - t) * np.exp(-pvals) + t * 1/L * np.exp(-1/L*pvals)))
 
 def grid_scipy(pvals,
             nt=5, min_t=0.01, max_t=0.99,
@@ -116,7 +117,7 @@ def grid_scipy(pvals,
 
 def likelihood_ratio_test(pvals, grid, trueT=None, trueL=None):
     assert (trueT is None) == (trueL is None)
-    null_lklh = log_likelihood_neg(0, 1, pvals)
+    null_lklh = log_likelihood_neg(0.5, 1, pvals)
     if trueT is None:
         if grid:
             results = grid_scipy(pvals)
@@ -143,11 +144,29 @@ def GetPvalue(null_method, null_values, test_stat):
         pval = (index + 1)/(n_iter+1)
     return pval
 
-def RunSNP(snp, tstats, CPMA=False, XQTL=False, grid=False,\
+def GetDist(chrom, pos, gene, genes_dict):
+    if chrom == genes_dict[gene][0]:
+        return abs(pos-genes_dict[gene][1])
+    else: return 10000000000
+
+def RunSNP(snp, genes, tstats, genes_dict, n_genes, remove_closest=False, CPMA=False, XQTL=False, grid=False,\
         null_method="chi2", null_values_cpma=None, null_values_xqtl=None, null_sim=False):
     results = {}
     results["snp"] = snp
-    pvalues = 2*stats.norm.cdf(-np.abs(tstats))
+    #results["gc"] = gc
+    chrom = snp.split('_')[0]
+    pos = int(snp.split('_')[1])
+    if remove_closest: 
+        dist = [GetDist(chrom, pos, gene, genes_dict) for gene in genes]
+        #n_min_values = 303
+        n_min_values = n_genes
+        indices = sorted(range(len(dist)), key=lambda k: dist[k])[:n_min_values]
+        pvalues = np.array([element for i, element in enumerate(tstats) if i not in indices])
+    else:
+        pvalues = np.array(tstats)
+    #tstats are genomic control adjusted pvalues instead
+    #pvalues_tstats = 2*stats.norm.cdf(-np.abs(tstats))
+    #pvalues = np.array([tstats[i] for i in indices])
     if CPMA:
         cpma = calculate_cpma(pvalues)
         results["CPMA"] = cpma
@@ -165,6 +184,7 @@ def RunSNP(snp, tstats, CPMA=False, XQTL=False, grid=False,\
 def WriteSNP(results, outf, CPMA=False, XQTL=False, null_sim=False, null_values_cpma=None, null_values_xqtl=None):
     if not null_sim:
         outitems = [results["snp"]]
+        #outitems.extend([results["gc"]])
     else:
         outitems = []
     if CPMA:
@@ -185,16 +205,18 @@ def WriteSNP(results, outf, CPMA=False, XQTL=False, null_sim=False, null_values_
 def worker(job_queue, out_queue, null_method, null_values_cpma, null_values_xqtl, null_sim):
     # Keep looking for jobs to process. add results to out_queue
     while True:
-        item = job_queue.get() # [snp, tstats, args.cpma, args.xqtl]
+        item = job_queue.get() # [snp, gc, genes, tstats, genes_dict, args.cpma, args.xqtl]
         if item == "DONE": break
-        results = RunSNP(*item[0:5], null_method, \
+        #results = RunSNP(*item[0:8], null_method, \
+        results = RunSNP(*item[0:9], null_method, \
             null_values_cpma, null_values_xqtl, null_sim)
-        out_queue.put([results, item[2], item[3]])
+        out_queue.put([results, item[4], item[5]])
 
 def writer(out_queue, CPMA, XQTL, out, null_sim, null_values_cpma, null_values_xqtl):
     # Set up output file
     if not null_sim:
         header = ["SNP"]
+        #header.extend(["gc"])
     else:
         header = []
     if CPMA:
@@ -302,10 +324,18 @@ def main(args):
     with open_method(input_fn,'rt') as f:
         header = f.readline() # SNP gene    beta    t-stat  p-value FDR
         header_items = header.split()
-        if not all(col in header_items for col in ["SNP", "gene", "t-stat"]): 
+        #if not all(col in header_items for col in ["SNP", "gene", "t-stat"]): 
+        if not all(col in header_items for col in ["SNP", "gene", "p-value"]): 
+        #if not all(col in header_items for col in ["SNP", "gene", "p-value_gc"]): 
             ERROR(f"Required columns do not exist in input {args.input}")                   
         snp_col = header_items.index("SNP")
-        tstat_col = header_items.index("t-stat")
+        gene_col = header_items.index("gene")
+        #gc_col = header_items.index("gc_value")
+
+        # use genomic control adjusted pvals instead of t-stats. t-stats were only used for eigendecomposition which we are not using
+        #tstat_col = header_items.index("t-stat")
+        #tstat_col = header_items.index("p-value_gc")
+        tstat_col = header_items.index("p-value")
         # Set up job queue and processors
         # Note right now will use at least two processors
         # should possibly not do all this if threads==1
@@ -318,24 +348,38 @@ def main(args):
         writer_proc = mp.Process(target=writer, args=(out_queue, args.cpma, args.xqtl, args.out, null_sim, None, None))
         for p in processes: p.start()
         writer_proc.start()
+
+        genes_info = pd.read_csv(args.genes_info, sep="\t")
+        genes_dict = {}
+        for index, row in genes_info.iterrows():
+            genes_dict[row['gene']] = [row['chrom'], row['avg.coord']]
+    
         tstats = []
+        genes = []
         # read the first snp and append the first tstat value
         firstsnp = f.readline()
         values = firstsnp.strip().split('\t')
         snp = values[snp_col]
+        genes.append(values[gene_col])
+        #gc = values[gc_col]
         tstats.append(float(values[tstat_col]))
         for line in f:
             values = line.strip().split('\t')
             cur_snp = values[snp_col]
             if snp == cur_snp: 
+                genes.append(values[gene_col])
                 tstats.append(float(values[tstat_col]))
             elif snp:
-                job_queue.put([snp, tstats, args.cpma, args.xqtl, args.grid])
+                #job_queue.put([snp, gc, genes, tstats, genes_dict, args.cpma, args.xqtl, args.grid])
+                job_queue.put([snp, genes, tstats, genes_dict, args.n_genes, args.remove_closest, args.cpma, args.xqtl, args.grid])
                 tstats = []
+                genes = []
             snp = cur_snp
+            #gc = values[gc_col]
         # Make sure final SNP gets run
         if snp:
-            job_queue.put([snp, tstats, args.cpma, args.xqtl, args.grid])
+            #job_queue.put([snp, gc, genes, tstats, genes_dict, args.cpma, args.xqtl, args.grid])
+            job_queue.put([snp, genes, tstats, genes_dict, args.n_genes, args.remove_closest, args.cpma, args.xqtl, args.grid])
     for i in range(args.threads): job_queue.put("DONE")
     for p in processes: p.join()
     out_queue.put("DONE")
@@ -355,6 +399,9 @@ def getargs():
     run_group.add_argument("--precomputed_null", help="Precomputed file with null values for test stats", \
             type=str)
     run_group.add_argument("--threads", help="Number of threads to use", type=int, default=1)
+    run_group.add_argument("--remove_closest", help="Remove n closest genes for each variant", action="store_true")
+    run_group.add_argument("--genes_info", help="File with info for genes. Must have 'chrom' and 'avg.coord'.", type=str)
+    run_group.add_argument("--n_genes", help="Number of n closest genes to remove", type=int, default=1)
     inout_group = parser.add_argument_group("Input/output")
     inout_group.add_argument("--input", help="Matrix eQTL file. Must be sorted by SNP.", type=str, required=True)
     inout_group.add_argument("--out", help="Output prefix", type=str, required=True)
