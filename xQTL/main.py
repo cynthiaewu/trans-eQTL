@@ -154,9 +154,9 @@ def RunSNP(snp, genes, tstats, genes_dict, n_genes, remove_closest=False, CPMA=F
     results = {}
     results["snp"] = snp
     #results["gc"] = gc
-    chrom = snp.split('_')[0]
-    pos = int(snp.split('_')[1])
     if remove_closest: 
+        chrom = snp.split('_')[0]
+        pos = int(snp.split('_')[1])
         dist = [GetDist(chrom, pos, gene, genes_dict) for gene in genes]
         #n_min_values = 303
         n_min_values = n_genes
@@ -206,11 +206,12 @@ def worker(job_queue, out_queue, null_method, null_values_cpma, null_values_xqtl
     # Keep looking for jobs to process. add results to out_queue
     while True:
         item = job_queue.get() # [snp, gc, genes, tstats, genes_dict, args.cpma, args.xqtl]
+                #[snp, genes, tstats, genes_dict, args.n_genes, args.remove_closest, args.cpma, args.xqtl, args.grid])
         if item == "DONE": break
         #results = RunSNP(*item[0:8], null_method, \
         results = RunSNP(*item[0:9], null_method, \
             null_values_cpma, null_values_xqtl, null_sim)
-        out_queue.put([results, item[4], item[5]])
+        out_queue.put([results, item[6], item[7]])
 
 def writer(out_queue, CPMA, XQTL, out, null_sim, null_values_cpma, null_values_xqtl):
     # Set up output file
@@ -348,11 +349,12 @@ def main(args):
         writer_proc = mp.Process(target=writer, args=(out_queue, args.cpma, args.xqtl, args.out, null_sim, None, None))
         for p in processes: p.start()
         writer_proc.start()
-
-        genes_info = pd.read_csv(args.genes_info, sep="\t")
+        
         genes_dict = {}
-        for index, row in genes_info.iterrows():
-            genes_dict[row['gene']] = [row['chrom'], row['avg.coord']]
+        if args.remove_closest:
+            genes_info = pd.read_csv(args.genes_info, sep="\t")
+            for index, row in genes_info.iterrows():
+                genes_dict[row['gene']] = [row['chrom'], row['avg.coord']]
     
         tstats = []
         genes = []
