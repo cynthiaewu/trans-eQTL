@@ -4,7 +4,7 @@
 Tool to simulate expression data
 
 Example command:
-xQTL-simulate --out test --num-samples 10 \
+trexqtl-simulate --out test --num-samples 10 \
      --num-genes 20 --num-nullsnps 2 \
      --beta 0.2 --beta-sd 0 --num-targets 2 \
      --run-matrix-eqtl
