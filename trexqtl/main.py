@@ -4,7 +4,7 @@
 Tool to simulate expression data
 
 Example command:
-xQTL-run --input ../trans-eQTL/test/sim-0/matrixEQTL.out.gz --out test --cpma --xqtl 
+trexqtl-run --input ../trans-eQTL/test/sim-0/matrixEQTL.out.gz --out test --cpma --trexqtl 
 """
 
 import argparse
@@ -20,7 +20,7 @@ import scipy.optimize
 from scipy.stats import chi2, norm
 import sys
 import multiprocessing as mp
-from xQTL import __version__
+from trexqtl import __version__
 
 def ERROR(msg):
     sys.stderr.write("[ERROR]: " + msg.strip() + "\n")
@@ -174,11 +174,11 @@ def RunSNP(snp, genes, tstats, genes_dict, n_genes, remove_closest=False, CPMA=F
             results["CPMA_p"] = GetPvalue(null_method, null_values_cpma, cpma)
     if XQTL:
         test_stat, best_T, best_L = calculate_xqtl(pvalues, grid)
-        results["xQTL"] = test_stat
+        results["trexQTL"] = test_stat
         results["predicted_T"] = best_T
         results["predicted_L"] = best_L
         if not null_sim:
-            results["xQTL_p"] = GetPvalue(null_method, null_values_xqtl, test_stat)
+            results["trexQTL_p"] = GetPvalue(null_method, null_values_xqtl, test_stat)
     return results
 
 def WriteSNP(results, outf, CPMA=False, XQTL=False, null_sim=False, null_values_cpma=None, null_values_xqtl=None):
@@ -195,18 +195,18 @@ def WriteSNP(results, outf, CPMA=False, XQTL=False, null_sim=False, null_values_
         else:
             null_values_cpma.append([results["CPMA"]])
     if XQTL:
-        outitems.extend([results["xQTL"]])
+        outitems.extend([results["trexQTL"]])
         if not null_sim:
-            outitems.extend([results["predicted_T"], results["predicted_L"], results["xQTL_p"]])
+            outitems.extend([results["predicted_T"], results["predicted_L"], results["trexQTL_p"]])
         else:
-            null_values_xqtl.append([results["xQTL"]])
+            null_values_xqtl.append([results["trexQTL"]])
     outf.write("\t".join([str(item) for item in outitems])+"\n")
 
 def worker(job_queue, out_queue, null_method, null_values_cpma, null_values_xqtl, null_sim):
     # Keep looking for jobs to process. add results to out_queue
     while True:
-        item = job_queue.get() # [snp, gc, genes, tstats, genes_dict, args.cpma, args.xqtl]
-                #[snp, genes, tstats, genes_dict, args.n_genes, args.remove_closest, args.cpma, args.xqtl, args.grid])
+        item = job_queue.get() # [snp, gc, genes, tstats, genes_dict, args.cpma, args.trexqtl]
+                #[snp, genes, tstats, genes_dict, args.n_genes, args.remove_closest, args.cpma, args.trexqtl, args.grid])
         if item == "DONE": break
         #results = RunSNP(*item[0:8], null_method, \
         results = RunSNP(*item[0:9], null_method, \
@@ -225,9 +225,9 @@ def writer(out_queue, CPMA, XQTL, out, null_sim, null_values_cpma, null_values_x
         if not null_sim:
             header.extend(["CPMA_p"])
     if XQTL:
-        header.extend(["xQTL"])
+        header.extend(["trexQTL"])
         if not null_sim:
-            header.extend(["predicted_T","predicted_L","xQTL_p"])
+            header.extend(["predicted_T","predicted_L","trexQTL_p"])
     if not null_sim:
         outf = open(f'{out}/results.tab', "w")
     else:
@@ -280,16 +280,16 @@ def main(args):
                         cpma_col = header_items.index("CPMA")
                     else:
                         ERROR(f"CPMA column does not exist in input {args.precomputed_null}")                   
-                if args.xqtl:
-                    if "xQTL" in header_items:
-                        xqtl_col = header_items.index("xQTL")
+                if args.trexqtl:
+                    if "trexQTL" in header_items:
+                        xqtl_col = header_items.index("trexQTL")
                     else:
-                        ERROR(f"xQTL column does not exist in input {args.precomputed_null}")                   
+                        ERROR(f"trexQTL column does not exist in input {args.precomputed_null}")                   
                 for line in f:
                     values = line.strip().split('\t')
                     if args.cpma:
                         null_values_cpma.append(float(values[cpma_col]))
-                    if args.xqtl:
+                    if args.trexqtl:
                         null_values_xqtl.append(float(values[xqtl_col]))
         else:
             # get eigendecomposition
@@ -302,12 +302,12 @@ def main(args):
                 args.null_method, None, None, null_sim)) \
                 for i in range(np.max([args.threads-1, 1]))]
             writer_proc = mp.Process(target=writer, args=(out_queue, args.cpma, \
-                args.xqtl, args.out, null_sim, null_values_cpma, null_values_xqtl))
+                args.trexqtl, args.out, null_sim, null_values_cpma, null_values_xqtl))
             for p in processes: p.start()
             writer_proc.start()
             
             # use job queue to simulate null values
-            simulate_null_values(mean_zscores, e_matrix, args.cpma, args.xqtl, args.grid, job_queue, out_queue)
+            simulate_null_values(mean_zscores, e_matrix, args.cpma, args.trexqtl, args.grid, job_queue, out_queue)
             
             for i in range(args.threads): job_queue.put("DONE")
             for p in processes: p.join()
@@ -346,7 +346,7 @@ def main(args):
         processes = [mp.Process(target=worker, args=(job_queue, out_queue, \
             args.null_method, null_values_cpma, null_values_xqtl, null_sim)) \
             for i in range(np.max([args.threads-1, 1]))]
-        writer_proc = mp.Process(target=writer, args=(out_queue, args.cpma, args.xqtl, args.out, null_sim, None, None))
+        writer_proc = mp.Process(target=writer, args=(out_queue, args.cpma, args.trexqtl, args.out, null_sim, None, None))
         for p in processes: p.start()
         writer_proc.start()
         
@@ -372,16 +372,16 @@ def main(args):
                 genes.append(values[gene_col])
                 tstats.append(float(values[tstat_col]))
             elif snp:
-                #job_queue.put([snp, gc, genes, tstats, genes_dict, args.cpma, args.xqtl, args.grid])
-                job_queue.put([snp, genes, tstats, genes_dict, args.n_genes, args.remove_closest, args.cpma, args.xqtl, args.grid])
+                #job_queue.put([snp, gc, genes, tstats, genes_dict, args.cpma, args.trexqtl, args.grid])
+                job_queue.put([snp, genes, tstats, genes_dict, args.n_genes, args.remove_closest, args.cpma, args.trexqtl, args.grid])
                 tstats = []
                 genes = []
             snp = cur_snp
             #gc = values[gc_col]
         # Make sure final SNP gets run
         if snp:
-            #job_queue.put([snp, gc, genes, tstats, genes_dict, args.cpma, args.xqtl, args.grid])
-            job_queue.put([snp, genes, tstats, genes_dict, args.n_genes, args.remove_closest, args.cpma, args.xqtl, args.grid])
+            #job_queue.put([snp, gc, genes, tstats, genes_dict, args.cpma, args.trexqtl, args.grid])
+            job_queue.put([snp, genes, tstats, genes_dict, args.n_genes, args.remove_closest, args.cpma, args.trexqtl, args.grid])
     for i in range(args.threads): job_queue.put("DONE")
     for p in processes: p.join()
     out_queue.put("DONE")
@@ -391,9 +391,9 @@ def main(args):
 
 def getargs(): 
     parser = argparse.ArgumentParser(__doc__)
-    run_group = parser.add_argument_group("xQTL run parameters")
-    run_group.add_argument("--xqtl", help="Run x-QTL", action="store_true")
-    run_group.add_argument("--grid", help="Run x-QTL with a grid search for t target genes", action="store_true")
+    run_group = parser.add_argument_group("Trex-QTL run parameters")
+    run_group.add_argument("--trexqtl", help="Run Trex-QTL", action="store_true")
+    run_group.add_argument("--grid", help="Run Trex-QTL with a grid search for t target genes", action="store_true")
     run_group.add_argument("--cpma", help="Run CPMA", action="store_true")
     run_group.add_argument("-s", "--seed", help="Seed for random generator", type=int, default=0 )    
     run_group.add_argument("--null_method", help="How to get the null distribution for test stats" \
