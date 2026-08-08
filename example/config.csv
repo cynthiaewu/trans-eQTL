@@ -12,4 +12,4 @@ beta_sd,0
 num_sim,1
 seed,0
 run_matrix_eqtl,False
-out,test_dataset
+out,example
