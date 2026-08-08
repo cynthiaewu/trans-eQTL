@@ -1,0 +1,15 @@
+command,/home/cynthiawu/.local/bin/trexqtl-simulate --num-genes 100 --num-snps 10 --num-nullsnps 90 --num-samples 150 --beta 0.5 --num-targets 10 --out test_dataset
+num_genes,100
+num_snps,10
+num_nullsnps,90
+num_peer,0
+num_samples,150
+maf,0.5
+num_targets,10
+gxg_corr,None
+beta,0.5
+beta_sd,0
+num_sim,1
+seed,0
+run_matrix_eqtl,False
+out,test_dataset
